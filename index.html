@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GestCantiere</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --gold:#829B82;--gl:#EDF2ED;--gd:#4A6B4A;
+  --bg:#F5F4F0;--white:#fff;--tx:#1C1C1C;--muted:#717171;
+  --border:#D5D8D2;--grn:#1A6B3A;--gnbg:#EAF5EF;
+  --red:#C0392B;--rdbg:#FDEAEA;--sw:250px;--rad:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+
+/* ═══ LOGIN ══════════════════════════════════════ */
+#LS{
+  min-height:100vh;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,#2C3E2C 0%,#1A2A1A 100%);
+}
+.ls-top{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:2.5rem 1.25rem 1.5rem;
+}
+.ls-logo{text-align:center;margin-bottom:2rem}
+.ls-logo h1{
+  font-family:'DM Serif Display',serif;font-size:2.6rem;
+  color:var(--gold);letter-spacing:.5px;line-height:1.1;
+}
+.ls-logo p{
+  color:#555;font-size:.72rem;letter-spacing:3px;
+  text-transform:uppercase;margin-top:6px;
+}
+.ls-card{
+  width:100%;max-width:420px;
+  background:#fff;border-radius:20px;
+  padding:1.75rem 1.5rem;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.ls-card h2{
+  font-family:'DM Serif Display',serif;font-size:1.5rem;
+  margin-bottom:.25rem;
+}
+.ls-card .subtitle{
+  color:var(--muted);font-size:.83rem;margin-bottom:1.25rem;
+}
+/* Role toggle */
+.role-toggle{
+  display:flex;background:#F0EDE6;border-radius:10px;
+  padding:4px;margin-bottom:1.25rem;gap:4px;
+}
+.rt-btn{
+  flex:1;padding:11px 8px;border:none;background:transparent;
+  border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  font-size:.9rem;font-weight:500;color:#888;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.rt-btn.on{
+  background:#fff;color:var(--tx);font-weight:600;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+/* Fields */
+.fg{margin-bottom:.9rem}
+.fg label{
+  display:block;font-size:.72rem;font-weight:600;color:var(--muted);
+  margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;
+}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:13px 14px;border:2px solid var(--border);
+  border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;
+  outline:none;background:#FAFAF8;transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{
+  border-color:var(--gold);background:#fff;
+}
+.fg textarea{min-height:90px;resize:vertical}
+/* Main button */
+.btn-main{
+  width:100%;padding:15px;background:var(--gold);border:none;
+  border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;
+  font-size:1rem;font-weight:700;cursor:pointer;
+  transition:background .15s;letter-spacing:.2px;margin-top:.25rem;
+}
+.btn-main:hover{background:var(--gd)}
+.btn-main:active{transform:scale(.98)}
+.auth-err{
+  color:var(--red);font-size:.83rem;margin-top:.6rem;
+  min-height:1.1rem;text-align:center;font-weight:500;
+}
+.auth-link{
+  text-align:center;margin-top:1.1rem;font-size:.85rem;color:var(--muted);
+}
+.auth-link button{
+  background:none;border:none;color:var(--gold);font-weight:600;
+  cursor:pointer;font-size:.85rem;font-family:'DM Sans',sans-serif;
+}
+.ls-note{
+  background:#F8F6F0;border-radius:8px;padding:.75rem 1rem;
+  font-size:.8rem;color:#888;line-height:1.55;margin-top:1rem;
+  border-left:3px solid var(--gold);
+}
+.ls-note strong{color:var(--gd)}
+.info-box{
+  background:var(--gl);border-radius:8px;padding:.8rem 1rem;
+  font-size:.82rem;color:var(--gd);margin-bottom:.9rem;
+  line-height:1.5;border-left:3px solid var(--gold);
+}
+.ls-footer{
+  text-align:center;padding:1rem;
+}
+.reset-btn{
+  background:none;border:none;color:#444;font-size:.75rem;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  text-decoration:underline;padding:6px 12px;
+}
+
+/* ═══ APP ════════════════════════════════════════ */
+#APP{display:none;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.side{
+  width:var(--sw);background:#1E2E1E;position:fixed;
+  top:0;left:0;height:100vh;display:flex;flex-direction:column;
+  z-index:100;
+}
+.sb-brand{padding:1.1rem 1rem .85rem;border-bottom:1px solid #222}
+.sb-brand h1{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--gold)}
+.sb-brand small{color:#444;font-size:.63rem;letter-spacing:1.8px;text-transform:uppercase}
+.sb-user{padding:.75rem 1rem;border-bottom:1px solid #222}
+.sb-badge{display:flex;align-items:center;gap:9px;background:#1E1E1E;border-radius:8px;padding:9px 11px}
+.av{
+  width:34px;height:34px;border-radius:50%;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.72rem;color:#111;flex-shrink:0;
+}
+.sb-nm{color:#ddd;font-size:.85rem;font-weight:600}
+.sb-rl{color:#555;font-size:.67rem;text-transform:uppercase;letter-spacing:.7px;margin-top:1px}
+.sb-nav{flex:1;padding:.8rem .6rem;overflow-y:auto}
+.nav-sec{font-size:.62rem;color:#444;text-transform:uppercase;letter-spacing:1.5px;padding:.7rem .5rem .3rem}
+.ni{
+  display:flex;align-items:center;gap:9px;padding:10px 11px;
+  border-radius:8px;cursor:pointer;color:#666;font-size:.84rem;
+  transition:all .12s;margin-bottom:2px;border:none;background:none;
+  width:100%;text-align:left;font-family:'DM Sans',sans-serif;
+}
+.ni:hover{background:#1E1E1E;color:#bbb}
+.ni.on{background:var(--gold);color:#111;font-weight:600}
+.sb-foot{padding:.8rem .6rem;border-top:1px solid #222}
+.exit-btn{
+  display:flex;align-items:center;gap:7px;padding:9px 11px;
+  color:#555;font-size:.82rem;cursor:pointer;border-radius:8px;
+  border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;
+}
+.exit-btn:hover{background:#1E1E1E;color:var(--red)}
+.main{margin-left:var(--sw);flex:1;padding:1.6rem 1.75rem;min-height:100vh}
+
+/* ═══ COMPONENTS ════════════════════════════════ */
+.ph{margin-bottom:1.5rem}
+.ph h2{font-family:'DM Serif Display',serif;font-size:1.65rem}
+.ph p{color:var(--muted);font-size:.86rem;margin-top:3px}
+.card{background:var(--white);border-radius:var(--rad);border:1px solid var(--border);padding:1.25rem;margin-bottom:1rem}
+.card-title{font-weight:600;font-size:.9rem;margin-bottom:.85rem;color:var(--tx)}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.8rem;margin-bottom:1.2rem}
+.sc{background:var(--white);border-radius:var(--rad);border:1px solid var(--border);padding:1rem}
+.sl{font-size:.69rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.sv{font-size:1.45rem;font-weight:700}
+.sv.gold{color:var(--gd)}.sv.grn{color:var(--grn)}
+.btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:500;transition:all .12s}
+.bg{background:var(--gold);color:#fff}.bg:hover{background:var(--gd)}
+.bo{background:none;border:1.5px solid var(--border);color:var(--tx)}.bo:hover{border-color:var(--gold);color:var(--gd)}
+.br{background:none;border:1.5px solid #e5b0b0;color:var(--red)}.br:hover{background:var(--rdbg)}
+.bsm{padding:5px 11px;font-size:.78rem}
+.brow{display:flex;gap:7px;flex-wrap:wrap;margin-top:.85rem}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{text-align:left;padding:9px 11px;border-bottom:2px solid var(--border);color:var(--muted);font-size:.71rem;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+td{padding:9px 11px;border-bottom:1px solid #F2EFE8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAF8}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.71rem;font-weight:600}
+.bgg{background:var(--gl);color:var(--gd)}
+.bgv{background:var(--gnbg);color:var(--grn)}
+.bgr{background:var(--rdbg);color:var(--red)}
+.bggr{background:#F0EDE6;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.fgrid .full{grid-column:1/-1}
+.cc{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--rad);
+  padding:1.1rem;display:flex;justify-content:space-between;
+  align-items:flex-start;margin-bottom:.65rem;transition:all .12s;
+}
+.cc:hover{box-shadow:0 3px 12px rgba(0,0,0,.08);border-color:#ccc}
+.cc-name{font-weight:600;font-size:.93rem;margin-bottom:3px}
+.cc-meta{font-size:.77rem;color:var(--muted)}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.mbox{background:var(--white);border-radius:16px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+.mtit{font-family:'DM Serif Display',serif;font-size:1.25rem;margin-bottom:1.1rem}
+.mfoot{display:flex;gap:7px;justify-content:flex-end;margin-top:1.1rem}
+.alert{border-radius:8px;padding:.8rem 1rem;font-size:.83rem;margin-bottom:.85rem}
+.aok{background:var(--gnbg);color:var(--grn);border:1px solid #b2d8bc}
+.ainfo{background:#EBF5FB;color:#1A5276;border:1px solid #AED6F1}
+/* VOCAL */
+#recbtn{
+  width:76px;height:76px;border-radius:50%;border:3px solid var(--gold);
+  background:var(--gl);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;margin:1rem auto;font-size:1.9rem;transition:all .2s;
+}
+#recbtn:hover{background:var(--gold)}
+#recbtn.rec{background:var(--red);border-color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.4)}50%{box-shadow:0 0 0 12px rgba(192,57,43,0)}}
+.rst{text-align:center;color:var(--muted);font-size:.84rem;margin-top:.35rem;min-height:1.2rem}
+.tbox{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.9rem;min-height:60px;font-size:.86rem;line-height:1.65;white-space:pre-wrap;margin:.75rem 0}
+.sbanner{background:var(--gl);border:1.5px solid var(--gold);border-radius:8px;padding:.9rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.sbanner h3{font-weight:700;color:var(--gd);font-size:.92rem}
+.sbanner p{font-size:.74rem;color:var(--gd);opacity:.8;margin-top:2px}
+.spin-wrap{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.83rem;padding:.8rem}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═══ MOBILE ════════════════════════════════════ */
+@media(max-width:768px){
+  .side{width:100%;height:auto;position:relative;flex-direction:column}
+  .main{margin-left:0;padding:1rem}
+  .fgrid{grid-template-columns:1fr}
+  .sg{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="LS">
+  <div class="ls-top">
+    <div class="ls-logo">
+      <h1>GestCantiere</h1>
+      <p>Gestionale Ristrutturazioni</p>
+    </div>
+
+    <!-- ACCEDI -->
+    <div class="ls-card" id="CL">
+      <h2>Accedi</h2>
+      <p class="subtitle">Scegli il tuo ruolo e inserisci le credenziali</p>
+      <div class="role-toggle">
+        <button class="rt-btn on" id="tA" onclick="setRole('admin')">🏗️ Titolare</button>
+        <button class="rt-btn" id="tE" onclick="setRole('employee')">👷 Dipendente</button>
+      </div>
+      <div class="fg">
+        <label>Username</label>
+        <input id="lu" type="text" placeholder="mario.rossi" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input id="lp" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-main" onclick="doLogin()">Accedi →</button>
+      <div class="auth-err" id="LE"></div>
+      <div class="auth-link">Prima volta? <button onclick="goReg()">Crea un account</button></div>
+    </div>
+
+    <!-- REGISTRATI -->
+    <div class="ls-card" id="CR" style="display:none">
+      <h2>Crea account</h2>
+      <p class="subtitle">Inserisci nome e cognome — lo username si genera da solo</p>
+      <div class="role-toggle">
+        <button class="rt-btn on" id="rA" onclick="setRR('admin')">🏗️ Titolare</button>
+        <button class="rt-btn" id="rE" onclick="setRR('employee')">👷 Dipendente</button>
+      </div>
+      <div class="info-box" id="rnA">Accesso completo: cantieri, computi PDF, contabilità e dipendenti. Può esistere <strong>un solo titolare</strong>.</div>
+      <div class="info-box" id="rnE" style="display:none">Accesso al report giornaliero: registra le lavorazioni per cantiere.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.75rem">
+        <div class="fg" style="margin:0">
+          <label>Nome</label>
+          <input id="rn" placeholder="Mario" oninput="generaUsername()"/>
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Cognome</label>
+          <input id="rc" placeholder="Rossi" oninput="generaUsername()"/>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Username <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa">(generato automaticamente)</span></label>
+        <input id="ru" placeholder="Inserisci prima nome e cognome…" autocomplete="username"/>
+        <div style="font-size:.74rem;color:var(--muted);margin-top:3px" id="ru-hint"></div>
+      </div>
+      <div id="reg-preview" style="display:none;background:#F5F4F0;border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;font-size:.82rem;line-height:1.8">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.25rem">Riepilogo account</div>
+        <div>👤 Nome: <b id="prev-nome">—</b></div>
+        <div>🔑 Username: <b id="prev-user" style="color:var(--gd)">—</b></div>
+      </div>
+      <div class="fg">
+        <label>Password <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa">(min. 6 caratteri)</span></label>
+        <input type="password" id="rp" placeholder="Scegli una password"/>
+      </div>
+      <div class="fg">
+        <label>Conferma password</label>
+        <input type="password" id="rp2" placeholder="Ripeti la password" onkeydown="if(event.key==='Enter')doReg()"/>
+      </div>
+      <button class="btn-main" onclick="doReg()">Crea account →</button>
+      <div class="auth-err" id="RE"></div>
+      <div class="auth-link">Hai già un account? <button onclick="goLogin()">Accedi</button></div>
+    </div>
+  </div>
+  <div class="ls-footer">
+    <button class="reset-btn" onclick="emergencyReset()">⚙️ Reimposta sistema</button>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="APP">
+  <div class="layout">
+    <div class="side">
+      <div class="sb-brand"><h1>GestCantiere</h1><small>Ristrutturazioni</small></div>
+      <div class="sb-user">
+        <div class="sb-badge">
+          <div class="av" id="SAV">?</div>
+          <div><div class="sb-nm" id="SNM">—</div><div class="sb-rl" id="SRL">—</div></div>
+        </div>
+      </div>
+      <nav class="sb-nav" id="SNAV"></nav>
+      <div class="sb-foot"><button class="exit-btn" onclick="doLogout()">⬅ Esci</button></div>
+    </div>
+    <div class="main" id="MAIN"></div>
+  </div>
+</div>
+
+<div class="mov" id="MOD" style="display:none"><div class="mbox" id="MB"></div></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DB — localStorage con prefisso gc4_
+// ════════════════════════════════════════════════════════════
+const DB={
+  _k:k=>'gc4_'+k,
+  get(k){try{return JSON.parse(localStorage.getItem(this._k(k)))}catch{return null}},
+  set(k,v){try{localStorage.setItem(this._k(k),JSON.stringify(v));return true}catch(e){console.error('DB.set error',e);return false}},
+  del(k){localStorage.removeItem(this._k(k))},
+  list(k){return this.get(k)||[]},
+  push(k,v){const l=this.list(k);l.push(v);this.set(k,l);return v},
+  upd(k,id,p){const l=this.list(k),i=l.findIndex(x=>x.id===id);if(i>=0){l[i]={...l[i],...p};this.set(k,l)}},
+  rm(k,id){this.set(k,this.list(k).filter(x=>x.id!==id))}
+};
+
+function initDB(){
+  if(!DB.get('users'))DB.set('users',[]);
+  if(!DB.get('cantieri'))DB.set('cantieri',[]);
+  if(!DB.get('logs'))DB.set('logs',[]);
+  if(!DB.get('computi'))DB.set('computi',[]);
+}
+
+function emergencyReset(){
+  if(!confirm('Eliminare TUTTI i dati GestCantiere?\nQuesta azione non può essere annullata.'))return;
+  // Elimina TUTTI i prefissi usati nelle versioni precedenti
+  const prefissi=['gc_','gc2_','gc3_','gc4_'];
+  Object.keys(localStorage).forEach(k=>{
+    if(prefissi.some(p=>k.startsWith(p)))localStorage.removeItem(k);
+  });
+  // Pulisce anche senza prefisso (per sicurezza)
+  ['users','cantieri','logs','computi','session','SID','azienda'].forEach(k=>{
+    localStorage.removeItem(k);
+  });
+  location.reload();
+}
+
+// ════════════════════════════════════════════════════════════
+// LISTINO — 90 voci Regione Sicilia DEI 2024
+// ════════════════════════════════════════════════════════════
+const L={
+  // ── DEMOLIZIONI E RIMOZIONI ── (DEI Recupero 2024, Cap.A)
+  "demolizione muratura mattoni":{um:"m³",p:58.20,cat:"Demolizioni"},
+  "demolizione muratura c.a.":{um:"m³",p:78.40,cat:"Demolizioni"},
+  "demolizione tramezza":{um:"m²",p:14.60,cat:"Demolizioni"},
+  "demolizione solaio latero-cementizio":{um:"m²",p:32.80,cat:"Demolizioni"},
+  "demolizione pavimento piastrelle":{um:"m²",p:12.40,cat:"Demolizioni"},
+  "demolizione massetto":{um:"m²",p:8.60,cat:"Demolizioni"},
+  "demolizione intonaco":{um:"m²",p:7.80,cat:"Demolizioni"},
+  "demolizione rivestimento ceramica":{um:"m²",p:9.40,cat:"Demolizioni"},
+  "demolizione copertura coppi":{um:"m²",p:18.60,cat:"Demolizioni"},
+  "rimozione infisso finestra":{um:"cad",p:42.80,cat:"Demolizioni"},
+  "rimozione porta interna":{um:"cad",p:28.40,cat:"Demolizioni"},
+  "rimozione sanitari":{um:"cad",p:28.60,cat:"Demolizioni"},
+  "rimozione caldaia":{um:"cad",p:68.40,cat:"Demolizioni"},
+  "rimozione pavimento legno":{um:"m²",p:14.80,cat:"Demolizioni"},
+  "smaltimento macerie":{um:"t",p:38.60,cat:"Demolizioni"},
+  "trasporto macerie":{um:"m³",p:18.40,cat:"Demolizioni"},
+  "demolizione":{um:"m²",p:14.60,cat:"Demolizioni"},
+
+  // ── SCAVI E MOVIMENTI TERRA ── (DEI Nuove Costruzioni 2024, Cap.B)
+  "scavo a mano":{um:"m³",p:32.40,cat:"Scavi"},
+  "scavo meccanico":{um:"m³",p:9.60,cat:"Scavi"},
+  "scavo fondazioni":{um:"m³",p:22.80,cat:"Scavi"},
+  "riempimento e costipazione":{um:"m³",p:16.40,cat:"Scavi"},
+
+  // ── STRUTTURE C.A. ── (DEI Nuove Costruzioni 2024, Cap.C)
+  "cemento armato fondazioni":{um:"m³",p:412.00,cat:"Strutture C.A."},
+  "cemento armato elevazioni":{um:"m³",p:438.00,cat:"Strutture C.A."},
+  "cemento armato pilastri":{um:"m³",p:482.00,cat:"Strutture C.A."},
+  "cemento armato travi":{um:"m³",p:464.00,cat:"Strutture C.A."},
+  "cemento armato":{um:"m³",p:438.00,cat:"Strutture C.A."},
+  "calcestruzzo non armato":{um:"m³",p:204.00,cat:"Strutture C.A."},
+  "getto fondazioni":{um:"m³",p:412.00,cat:"Strutture C.A."},
+  "cassaforma piana":{um:"m²",p:34.80,cat:"Strutture C.A."},
+  "armatura ferro B450C":{um:"kg",p:2.38,cat:"Strutture C.A."},
+  "rete elettrosaldata":{um:"m²",p:9.20,cat:"Strutture C.A."},
+
+  // ── MURATURE ── (DEI Recupero 2024, Cap.D)
+  "muratura mattoni forati 8cm":{um:"m²",p:52.40,cat:"Murature"},
+  "muratura mattoni forati 12cm":{um:"m²",p:62.80,cat:"Murature"},
+  "muratura mattoni forati 20cm":{um:"m²",p:78.40,cat:"Murature"},
+  "muratura mattoni pieni":{um:"m²",p:104.00,cat:"Murature"},
+  "muratura blocchi cls aerato":{um:"m²",p:88.40,cat:"Murature"},
+  "muratura blocchi porizzati":{um:"m²",p:92.80,cat:"Murature"},
+  "muratura pietra irregolare":{um:"m²",p:158.00,cat:"Murature"},
+  "muratura tufo":{um:"m²",p:118.00,cat:"Murature"},
+  "tramezza 8cm":{um:"m²",p:42.80,cat:"Murature"},
+  "tramezza 12cm":{um:"m²",p:48.40,cat:"Murature"},
+  "muratura":{um:"m²",p:78.40,cat:"Murature"},
+
+  // ── CONSOLIDAMENTO STRUTTURALE ── (DEI Recupero 2024, Cap.E)
+  "cuci-scuci muratura":{um:"m²",p:188.00,cat:"Consolidamento"},
+  "iniezioni cementizie":{um:"m²",p:68.40,cat:"Consolidamento"},
+  "rete GFRP rinforzo":{um:"m²",p:48.20,cat:"Consolidamento"},
+  "intonaco armato":{um:"m²",p:58.40,cat:"Consolidamento"},
+  "tiranti acciaio":{um:"cad",p:228.00,cat:"Consolidamento"},
+  "micropali":{um:"m",p:148.00,cat:"Consolidamento"},
+
+  // ── SOLAI ── (DEI Nuove Costruzioni 2024, Cap.F)
+  "solaio latero-cementizio H16+4":{um:"m²",p:92.40,cat:"Solai"},
+  "solaio latero-cementizio H20+4":{um:"m²",p:104.00,cat:"Solai"},
+  "solaio in legno":{um:"m²",p:132.00,cat:"Solai"},
+  "solaio prefabbricato":{um:"m²",p:88.00,cat:"Solai"},
+  "solaio":{um:"m²",p:98.00,cat:"Solai"},
+
+  // ── COPERTURE ── (DEI Nuove Costruzioni 2024, Cap.G)
+  "tetto coppi laterizio":{um:"m²",p:92.40,cat:"Coperture"},
+  "tetto coppi siciliani":{um:"m²",p:108.00,cat:"Coperture"},
+  "tetto piano guaina":{um:"m²",p:78.40,cat:"Coperture"},
+  "rifacimento manto coppi":{um:"m²",p:84.80,cat:"Coperture"},
+  "tetto":{um:"m²",p:92.40,cat:"Coperture"},
+  "coppi":{um:"m²",p:82.00,cat:"Coperture"},
+  "coibentazione copertura EPS":{um:"m²",p:38.40,cat:"Coperture"},
+  "coibentazione lana roccia":{um:"m²",p:48.20,cat:"Coperture"},
+  "gronda PVC":{um:"m",p:22.40,cat:"Coperture"},
+  "pluviale PVC":{um:"m",p:18.60,cat:"Coperture"},
+
+  // ── IMPERMEABILIZZAZIONI ── (DEI Recupero 2024, Cap.H)
+  "impermeabilizzazione guaina 3mm":{um:"m²",p:22.80,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione guaina 4mm":{um:"m²",p:28.40,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione guaina ardesiata":{um:"m²",p:32.60,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione":{um:"m²",p:28.40,cat:"Impermeabilizzazioni"},
+  "guaina":{um:"m²",p:24.80,cat:"Impermeabilizzazioni"},
+  "membrana drenante":{um:"m²",p:16.40,cat:"Impermeabilizzazioni"},
+  "risanamento umidità ascendente":{um:"m²",p:88.40,cat:"Impermeabilizzazioni"},
+
+  // ── INTONACI E RASATURE ── (DEI Recupero 2024, Cap.I)
+  "intonaco civile interno":{um:"m²",p:24.80,cat:"Intonaci"},
+  "intonaco civile esterno":{um:"m²",p:32.40,cat:"Intonaci"},
+  "intonaco rasante":{um:"m²",p:16.40,cat:"Intonaci"},
+  "intonaco deumidificante":{um:"m²",p:42.80,cat:"Intonaci"},
+  "intonachino calce":{um:"m²",p:19.60,cat:"Intonaci"},
+  "intonaco":{um:"m²",p:24.80,cat:"Intonaci"},
+  "rasatura gesso":{um:"m²",p:12.40,cat:"Intonaci"},
+  "stucco liscio":{um:"m²",p:22.40,cat:"Intonaci"},
+  "stucco veneziano":{um:"m²",p:52.80,cat:"Intonaci"},
+  "riparazione intonaco":{um:"m²",p:38.40,cat:"Intonaci"},
+
+  // ── ISOLAMENTO TERMICO E ACUSTICO ── (DEI Recupero 2024, Cap.L)
+  "cappotto EPS 8cm":{um:"m²",p:52.40,cat:"Isolamento"},
+  "cappotto EPS 10cm":{um:"m²",p:62.80,cat:"Isolamento"},
+  "cappotto EPS 12cm":{um:"m²",p:72.40,cat:"Isolamento"},
+  "cappotto lana roccia 10cm":{um:"m²",p:84.80,cat:"Isolamento"},
+  "cappotto sismico armato":{um:"m²",p:128.00,cat:"Isolamento"},
+  "cappotto":{um:"m²",p:62.80,cat:"Isolamento"},
+  "isolamento termico":{um:"m²",p:52.40,cat:"Isolamento"},
+  "isolamento acustico pareti":{um:"m²",p:42.80,cat:"Isolamento"},
+  "isolamento acustico solaio":{um:"m²",p:32.40,cat:"Isolamento"},
+  "isolamento solaio":{um:"m²",p:32.40,cat:"Isolamento"},
+  "barriera vapore":{um:"m²",p:9.80,cat:"Isolamento"},
+
+  // ── MASSETTI E SOTTOFONDI ── (DEI Nuove Costruzioni 2024, Cap.M)
+  "massetto cls 5cm":{um:"m²",p:17.60,cat:"Massetti"},
+  "massetto cls 8cm":{um:"m²",p:24.40,cat:"Massetti"},
+  "massetto alleggerito":{um:"m²",p:29.80,cat:"Massetti"},
+  "massetto autolivellante":{um:"m²",p:19.80,cat:"Massetti"},
+  "massetto":{um:"m²",p:19.80,cat:"Massetti"},
+  "vespaio aerato cupole":{um:"m²",p:42.80,cat:"Massetti"},
+
+  // ── PAVIMENTI ── (DEI Recupero 2024, Cap.N)
+  "piastrelle ceramica":{um:"m²",p:34.80,cat:"Pavimenti"},
+  "gres porcellanato":{um:"m²",p:44.80,cat:"Pavimenti"},
+  "gres":{um:"m²",p:39.60,cat:"Pavimenti"},
+  "ceramica":{um:"m²",p:34.80,cat:"Pavimenti"},
+  "marmo":{um:"m²",p:72.40,cat:"Pavimenti"},
+  "granito":{um:"m²",p:78.40,cat:"Pavimenti"},
+  "pietra lavica":{um:"m²",p:92.80,cat:"Pavimenti"},
+  "parquet":{um:"m²",p:52.40,cat:"Pavimenti"},
+  "laminato":{um:"m²",p:34.80,cat:"Pavimenti"},
+  "pavimento vinilico LVT":{um:"m²",p:28.40,cat:"Pavimenti"},
+  "porfido":{um:"m²",p:72.40,cat:"Pavimenti"},
+  "marmettoni cemento":{um:"m²",p:29.80,cat:"Pavimenti"},
+  "pavimento esterno":{um:"m²",p:52.40,cat:"Pavimenti"},
+  "ristilatura giunti":{um:"m²",p:13.20,cat:"Pavimenti"},
+  "lucidatura marmo":{um:"m²",p:19.80,cat:"Pavimenti"},
+  "battiscopa":{um:"m",p:8.40,cat:"Pavimenti"},
+  "piastrelle":{um:"m²",p:34.80,cat:"Pavimenti"},
+
+  // ── RIVESTIMENTI ── (DEI Recupero 2024, Cap.O)
+  "rivestimento bagno":{um:"m²",p:38.40,cat:"Rivestimenti"},
+  "rivestimento cucina":{um:"m²",p:36.80,cat:"Rivestimenti"},
+  "rivestimento marmo":{um:"m²",p:82.40,cat:"Rivestimenti"},
+  "rivestimento gres porcellanato":{um:"m²",p:44.80,cat:"Rivestimenti"},
+  "rivestimento":{um:"m²",p:38.40,cat:"Rivestimenti"},
+
+  // ── CONTROSOFFITTI E CARTONGESSO ── (DEI Recupero 2024, Cap.P)
+  "controsoffitto cartongesso":{um:"m²",p:44.80,cat:"Cartongesso"},
+  "controsoffitto fonoassorbente":{um:"m²",p:64.80,cat:"Cartongesso"},
+  "controsoffitto":{um:"m²",p:44.80,cat:"Cartongesso"},
+  "parete cartongesso singola":{um:"m²",p:42.40,cat:"Cartongesso"},
+  "parete cartongesso doppia":{um:"m²",p:54.80,cat:"Cartongesso"},
+  "cartongesso":{um:"m²",p:42.40,cat:"Cartongesso"},
+  "cartongesso doppio":{um:"m²",p:54.80,cat:"Cartongesso"},
+  "parete cartongesso con isolante":{um:"m²",p:62.40,cat:"Cartongesso"},
+
+  // ── TINTEGGIATURE ── (DEI Recupero 2024, Cap.Q)
+  "pittura idropittura":{um:"m²",p:8.40,cat:"Tinteggiature"},
+  "pittura lavabile":{um:"m²",p:9.80,cat:"Tinteggiature"},
+  "pittura soffitto":{um:"m²",p:9.20,cat:"Tinteggiature"},
+  "pittura esterna silossanica":{um:"m²",p:15.60,cat:"Tinteggiature"},
+  "pittura elastomerica":{um:"m²",p:17.80,cat:"Tinteggiature"},
+  "pittura ai silicati":{um:"m²",p:19.60,cat:"Tinteggiature"},
+  "verniciatura ferro":{um:"m²",p:24.80,cat:"Tinteggiature"},
+  "pittura":{um:"m²",p:8.40,cat:"Tinteggiature"},
+  "pittura esterna":{um:"m²",p:15.60,cat:"Tinteggiature"},
+  "carta da parati":{um:"m²",p:22.40,cat:"Tinteggiature"},
+
+  // ── SERRAMENTI ── (DEI Recupero 2024, Cap.R)
+  "finestra PVC doppio vetro":{um:"cad",p:562.00,cat:"Serramenti"},
+  "finestra alluminio taglio termico":{um:"cad",p:648.00,cat:"Serramenti"},
+  "finestra legno":{um:"cad",p:828.00,cat:"Serramenti"},
+  "porta interna":{um:"cad",p:362.00,cat:"Serramenti"},
+  "porta blindata classe 3":{um:"cad",p:924.00,cat:"Serramenti"},
+  "portone ingresso":{um:"cad",p:1188.00,cat:"Serramenti"},
+  "persiana alluminio":{um:"cad",p:278.00,cat:"Serramenti"},
+  "tapparella avvolgibile":{um:"cad",p:198.00,cat:"Serramenti"},
+  "tapparella motorizzata":{um:"cad",p:322.00,cat:"Serramenti"},
+  "vetrocamera basso-emissivo":{um:"m²",p:92.40,cat:"Serramenti"},
+  "cancello pedonale":{um:"cad",p:868.00,cat:"Serramenti"},
+  "cancello carraio motorizzato":{um:"cad",p:1688.00,cat:"Serramenti"},
+  "infissi":{um:"cad",p:648.00,cat:"Serramenti"},
+  "finestra":{um:"cad",p:562.00,cat:"Serramenti"},
+  "porta":{um:"cad",p:362.00,cat:"Serramenti"},
+  "porta blindata":{um:"cad",p:924.00,cat:"Serramenti"},
+  "persiana":{um:"cad",p:278.00,cat:"Serramenti"},
+  "tapparella":{um:"cad",p:322.00,cat:"Serramenti"},
+  "cancello":{um:"cad",p:1688.00,cat:"Serramenti"},
+
+  // ── IMPIANTI IDRAULICI ── (DEI Recupero 2024, Cap.S)
+  "impianto idraulico":{um:"m²",p:64.80,cat:"Impianti Idraulici"},
+  "tubazione rame 3/4":{um:"m",p:24.80,cat:"Impianti Idraulici"},
+  "tubazione multistrato":{um:"m",p:19.80,cat:"Impianti Idraulici"},
+  "scarico PVC 110":{um:"m",p:16.40,cat:"Impianti Idraulici"},
+  "impianto gas":{um:"m²",p:34.80,cat:"Impianti Idraulici"},
+  "vaso wc sospeso":{um:"cad",p:398.00,cat:"Impianti Idraulici"},
+  "lavabo":{um:"cad",p:238.00,cat:"Impianti Idraulici"},
+  "bidet":{um:"cad",p:208.00,cat:"Impianti Idraulici"},
+  "doccia":{um:"cad",p:668.00,cat:"Impianti Idraulici"},
+  "vasca":{um:"cad",p:922.00,cat:"Impianti Idraulici"},
+  "rubinetteria bagno":{um:"cad",p:278.00,cat:"Impianti Idraulici"},
+  "sanitari":{um:"cad",p:844.00,cat:"Impianti Idraulici"},
+  "scarico":{um:"cad",p:178.00,cat:"Impianti Idraulici"},
+  "rubinetteria":{um:"cad",p:278.00,cat:"Impianti Idraulici"},
+
+  // ── IMPIANTI ELETTRICI ── (DEI Recupero 2024, Cap.T)
+  "impianto elettrico":{um:"m²",p:54.80,cat:"Impianti Elettrici"},
+  "quadro elettrico":{um:"cad",p:668.00,cat:"Impianti Elettrici"},
+  "punto luce":{um:"cad",p:52.40,cat:"Impianti Elettrici"},
+  "presa elettrica":{um:"cad",p:44.80,cat:"Impianti Elettrici"},
+  "videocitofono":{um:"cad",p:648.00,cat:"Impianti Elettrici"},
+  "impianto allarme":{um:"cad",p:1188.00,cat:"Impianti Elettrici"},
+  "fotovoltaico":{um:"kWp",p:1850.00,cat:"Impianti Elettrici"},
+
+  // ── IMPIANTI TERMICI ── (DEI Recupero 2024, Cap.U)
+  "impianto riscaldamento":{um:"m²",p:74.80,cat:"Impianti Termici"},
+  "impianto radiante":{um:"m²",p:74.80,cat:"Impianti Termici"},
+  "caldaia":{um:"cad",p:2188.00,cat:"Impianti Termici"},
+  "climatizzatore":{um:"cad",p:1388.00,cat:"Impianti Termici"},
+  "radiatore":{um:"cad",p:238.00,cat:"Impianti Termici"},
+
+  // ── OPERE ESTERNE ── (DEI Nuove Costruzioni 2024, Cap.V)
+  "pavimento esterno porfido":{um:"m²",p:74.80,cat:"Opere Esterne"},
+  "recinzione muratura":{um:"m",p:102.00,cat:"Opere Esterne"},
+  "muro di cinta":{um:"m²",p:132.00,cat:"Opere Esterne"},
+  "ringhiera":{um:"m",p:122.00,cat:"Opere Esterne"},
+  "scala":{um:"m",p:278.00,cat:"Opere Esterne"},
+
+  // ── PONTEGGI E OPERE PROVVISIONALI ── (DEI 2024, Cap.Z)
+  "ponteggio":{um:"m²",p:6.80,cat:"Ponteggi"},
+  "ponteggio mensile":{um:"m²",p:6.80,cat:"Ponteggi"},
+  "piattaforma aerea":{um:"h",p:18.40,cat:"Ponteggi"},
+
+  // ── MANODOPERA ── (DEI Sicilia 2024)
+  "operaio comune":{um:"h",p:26.40,cat:"Manodopera"},
+  "operaio qualificato":{um:"h",p:29.20,cat:"Manodopera"},
+  "operaio specializzato":{um:"h",p:31.80,cat:"Manodopera"},
+  "caposquadra":{um:"h",p:34.60,cat:"Manodopera"},
+  "manodopera":{um:"h",p:26.40,cat:"Manodopera"},
+  "muratore":{um:"h",p:31.80,cat:"Manodopera"},
+  "piastrellista":{um:"h",p:31.80,cat:"Manodopera"},
+  "elettricista":{um:"h",p:31.80,cat:"Manodopera"},
+  "idraulico":{um:"h",p:31.80,cat:"Manodopera"},
+  "imbianchino":{um:"h",p:29.20,cat:"Manodopera"},
+  "carpentiere":{um:"h",p:31.80,cat:"Manodopera"},
+  "saldatore":{um:"h",p:34.60,cat:"Manodopera"},
+  "geometra":{um:"h",p:58.00,cat:"Manodopera"},
+
+  // ── NOLEGGI ── (DEI Noli 2024)
+  "noleggio autocarro":{um:"h",p:88.00,cat:"Noleggi"},
+  "noleggio gru":{um:"gg",p:920.00,cat:"Noleggi"},
+  "noleggio escavatore":{um:"h",p:72.00,cat:"Noleggi"},
+  "noleggio betoniera":{um:"gg",p:88.00,cat:"Noleggi"},
+};
+
+
+const L_SIC={
+  // PREZZARIO UNICO REGIONALE SICILIA 2024 (D.A. n.2 del 17/01/2024) - Valido fino al 31/12/2026
+  // Le stesse voci del DEI con prezzi della Regione Sicilia
+  "demolizione muratura mattoni":{um:"m³",p:54.80,cat:"Demolizioni"},
+  "demolizione muratura c.a.":{um:"m³",p:82.40,cat:"Demolizioni"},
+  "demolizione tramezza":{um:"m²",p:13.20,cat:"Demolizioni"},
+  "demolizione solaio latero-cementizio":{um:"m²",p:34.60,cat:"Demolizioni"},
+  "demolizione pavimento piastrelle":{um:"m²",p:10.80,cat:"Demolizioni"},
+  "demolizione massetto":{um:"m²",p:7.40,cat:"Demolizioni"},
+  "demolizione intonaco":{um:"m²",p:6.80,cat:"Demolizioni"},
+  "demolizione rivestimento ceramica":{um:"m²",p:8.20,cat:"Demolizioni"},
+  "demolizione copertura coppi":{um:"m²",p:16.40,cat:"Demolizioni"},
+  "rimozione infisso finestra":{um:"cad",p:38.60,cat:"Demolizioni"},
+  "rimozione porta interna":{um:"cad",p:24.80,cat:"Demolizioni"},
+  "rimozione sanitari":{um:"cad",p:26.40,cat:"Demolizioni"},
+  "rimozione caldaia":{um:"cad",p:62.40,cat:"Demolizioni"},
+  "rimozione pavimento legno":{um:"m²",p:12.80,cat:"Demolizioni"},
+  "smaltimento macerie":{um:"t",p:36.20,cat:"Demolizioni"},
+  "trasporto macerie":{um:"m³",p:16.80,cat:"Demolizioni"},
+  "demolizione":{um:"m²",p:13.20,cat:"Demolizioni"},
+  "scavo a mano":{um:"m³",p:28.80,cat:"Scavi"},
+  "scavo meccanico":{um:"m³",p:8.40,cat:"Scavi"},
+  "scavo fondazioni":{um:"m³",p:19.60,cat:"Scavi"},
+  "riempimento e costipazione":{um:"m³",p:14.20,cat:"Scavi"},
+  "cemento armato fondazioni":{um:"m³",p:398.00,cat:"Strutture C.A."},
+  "cemento armato elevazioni":{um:"m³",p:424.00,cat:"Strutture C.A."},
+  "cemento armato pilastri":{um:"m³",p:468.00,cat:"Strutture C.A."},
+  "cemento armato travi":{um:"m³",p:452.00,cat:"Strutture C.A."},
+  "cemento armato":{um:"m³",p:424.00,cat:"Strutture C.A."},
+  "calcestruzzo non armato":{um:"m³",p:198.00,cat:"Strutture C.A."},
+  "getto fondazioni":{um:"m³",p:398.00,cat:"Strutture C.A."},
+  "cassaforma piana":{um:"m²",p:31.40,cat:"Strutture C.A."},
+  "armatura ferro B450C":{um:"kg",p:2.18,cat:"Strutture C.A."},
+  "rete elettrosaldata":{um:"m²",p:8.40,cat:"Strutture C.A."},
+  "muratura mattoni forati 8cm":{um:"m²",p:48.40,cat:"Murature"},
+  "muratura mattoni forati 12cm":{um:"m²",p:58.20,cat:"Murature"},
+  "muratura mattoni forati 20cm":{um:"m²",p:72.80,cat:"Murature"},
+  "muratura mattoni pieni":{um:"m²",p:98.00,cat:"Murature"},
+  "muratura blocchi cls aerato":{um:"m²",p:84.20,cat:"Murature"},
+  "muratura blocchi porizzati":{um:"m²",p:88.40,cat:"Murature"},
+  "muratura pietra irregolare":{um:"m²",p:148.00,cat:"Murature"},
+  "muratura tufo":{um:"m²",p:112.00,cat:"Murature"},
+  "tramezza 8cm":{um:"m²",p:39.80,cat:"Murature"},
+  "tramezza 12cm":{um:"m²",p:45.20,cat:"Murature"},
+  "muratura":{um:"m²",p:72.80,cat:"Murature"},
+  "cuci-scuci muratura":{um:"m²",p:178.00,cat:"Consolidamento"},
+  "iniezioni cementizie":{um:"m²",p:64.80,cat:"Consolidamento"},
+  "rete GFRP rinforzo":{um:"m²",p:45.80,cat:"Consolidamento"},
+  "intonaco armato":{um:"m²",p:55.40,cat:"Consolidamento"},
+  "tiranti acciaio":{um:"cad",p:218.00,cat:"Consolidamento"},
+  "micropali":{um:"m",p:142.00,cat:"Consolidamento"},
+  "solaio latero-cementizio H16+4":{um:"m²",p:88.00,cat:"Solai"},
+  "solaio latero-cementizio H20+4":{um:"m²",p:98.00,cat:"Solai"},
+  "solaio in legno":{um:"m²",p:128.00,cat:"Solai"},
+  "solaio prefabbricato":{um:"m²",p:84.00,cat:"Solai"},
+  "solaio":{um:"m²",p:92.00,cat:"Solai"},
+  "tetto coppi laterizio":{um:"m²",p:88.00,cat:"Coperture"},
+  "tetto coppi siciliani":{um:"m²",p:98.00,cat:"Coperture"},
+  "tetto piano guaina":{um:"m²",p:74.00,cat:"Coperture"},
+  "rifacimento manto coppi":{um:"m²",p:80.40,cat:"Coperture"},
+  "tetto":{um:"m²",p:88.00,cat:"Coperture"},
+  "coppi":{um:"m²",p:78.00,cat:"Coperture"},
+  "coibentazione copertura EPS":{um:"m²",p:36.40,cat:"Coperture"},
+  "coibentazione lana roccia":{um:"m²",p:45.80,cat:"Coperture"},
+  "gronda PVC":{um:"m",p:20.40,cat:"Coperture"},
+  "pluviale PVC":{um:"m",p:16.80,cat:"Coperture"},
+  "impermeabilizzazione guaina 3mm":{um:"m²",p:21.40,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione guaina 4mm":{um:"m²",p:26.80,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione guaina ardesiata":{um:"m²",p:30.80,cat:"Impermeabilizzazioni"},
+  "impermeabilizzazione":{um:"m²",p:26.80,cat:"Impermeabilizzazioni"},
+  "guaina":{um:"m²",p:23.40,cat:"Impermeabilizzazioni"},
+  "membrana drenante":{um:"m²",p:15.20,cat:"Impermeabilizzazioni"},
+  "risanamento umidità ascendente":{um:"m²",p:84.40,cat:"Impermeabilizzazioni"},
+  "intonaco civile interno":{um:"m²",p:22.80,cat:"Intonaci"},
+  "intonaco civile esterno":{um:"m²",p:29.60,cat:"Intonaci"},
+  "intonaco rasante":{um:"m²",p:15.20,cat:"Intonaci"},
+  "intonaco deumidificante":{um:"m²",p:40.20,cat:"Intonaci"},
+  "intonachino calce":{um:"m²",p:18.20,cat:"Intonaci"},
+  "intonaco":{um:"m²",p:22.80,cat:"Intonaci"},
+  "rasatura gesso":{um:"m²",p:11.40,cat:"Intonaci"},
+  "stucco liscio":{um:"m²",p:20.80,cat:"Intonaci"},
+  "stucco veneziano":{um:"m²",p:49.40,cat:"Intonaci"},
+  "riparazione intonaco":{um:"m²",p:36.20,cat:"Intonaci"},
+  "cappotto EPS 8cm":{um:"m²",p:49.40,cat:"Isolamento"},
+  "cappotto EPS 10cm":{um:"m²",p:59.40,cat:"Isolamento"},
+  "cappotto EPS 12cm":{um:"m²",p:68.40,cat:"Isolamento"},
+  "cappotto lana roccia 10cm":{um:"m²",p:80.40,cat:"Isolamento"},
+  "cappotto sismico armato":{um:"m²",p:122.00,cat:"Isolamento"},
+  "cappotto":{um:"m²",p:59.40,cat:"Isolamento"},
+  "isolamento termico":{um:"m²",p:49.40,cat:"Isolamento"},
+  "isolamento acustico pareti":{um:"m²",p:40.40,cat:"Isolamento"},
+  "isolamento acustico solaio":{um:"m²",p:30.40,cat:"Isolamento"},
+  "isolamento solaio":{um:"m²",p:30.40,cat:"Isolamento"},
+  "barriera vapore":{um:"m²",p:9.20,cat:"Isolamento"},
+  "massetto cls 5cm":{um:"m²",p:16.40,cat:"Massetti"},
+  "massetto cls 8cm":{um:"m²",p:22.80,cat:"Massetti"},
+  "massetto alleggerito":{um:"m²",p:28.20,cat:"Massetti"},
+  "massetto autolivellante":{um:"m²",p:18.40,cat:"Massetti"},
+  "massetto":{um:"m²",p:18.40,cat:"Massetti"},
+  "vespaio aerato cupole":{um:"m²",p:40.40,cat:"Massetti"},
+  "piastrelle ceramica":{um:"m²",p:32.40,cat:"Pavimenti"},
+  "gres porcellanato":{um:"m²",p:42.20,cat:"Pavimenti"},
+  "gres":{um:"m²",p:37.40,cat:"Pavimenti"},
+  "ceramica":{um:"m²",p:32.40,cat:"Pavimenti"},
+  "marmo":{um:"m²",p:68.40,cat:"Pavimenti"},
+  "granito":{um:"m²",p:74.40,cat:"Pavimenti"},
+  "pietra lavica":{um:"m²",p:88.40,cat:"Pavimenti"},
+  "parquet":{um:"m²",p:49.40,cat:"Pavimenti"},
+  "laminato":{um:"m²",p:32.40,cat:"Pavimenti"},
+  "pavimento vinilico LVT":{um:"m²",p:26.80,cat:"Pavimenti"},
+  "porfido":{um:"m²",p:68.40,cat:"Pavimenti"},
+  "marmettoni cemento":{um:"m²",p:28.20,cat:"Pavimenti"},
+  "pavimento esterno":{um:"m²",p:49.40,cat:"Pavimenti"},
+  "ristilatura giunti":{um:"m²",p:12.40,cat:"Pavimenti"},
+  "lucidatura marmo":{um:"m²",p:18.40,cat:"Pavimenti"},
+  "battiscopa":{um:"m",p:7.80,cat:"Pavimenti"},
+  "piastrelle":{um:"m²",p:32.40,cat:"Pavimenti"},
+  "rivestimento bagno":{um:"m²",p:36.40,cat:"Rivestimenti"},
+  "rivestimento cucina":{um:"m²",p:34.80,cat:"Rivestimenti"},
+  "rivestimento marmo":{um:"m²",p:78.40,cat:"Rivestimenti"},
+  "rivestimento gres porcellanato":{um:"m²",p:42.20,cat:"Rivestimenti"},
+  "rivestimento":{um:"m²",p:36.40,cat:"Rivestimenti"},
+  "controsoffitto cartongesso":{um:"m²",p:42.40,cat:"Cartongesso"},
+  "controsoffitto fonoassorbente":{um:"m²",p:62.40,cat:"Cartongesso"},
+  "controsoffitto":{um:"m²",p:42.40,cat:"Cartongesso"},
+  "parete cartongesso singola":{um:"m²",p:38.40,cat:"Cartongesso"},
+  "parete cartongesso doppia":{um:"m²",p:52.20,cat:"Cartongesso"},
+  "cartongesso":{um:"m²",p:38.40,cat:"Cartongesso"},
+  "cartongesso doppio":{um:"m²",p:52.20,cat:"Cartongesso"},
+  "parete cartongesso con isolante":{um:"m²",p:58.40,cat:"Cartongesso"},
+  "pittura idropittura":{um:"m²",p:7.60,cat:"Tinteggiature"},
+  "pittura lavabile":{um:"m²",p:9.20,cat:"Tinteggiature"},
+  "pittura soffitto":{um:"m²",p:8.60,cat:"Tinteggiature"},
+  "pittura esterna silossanica":{um:"m²",p:14.40,cat:"Tinteggiature"},
+  "pittura elastomerica":{um:"m²",p:16.20,cat:"Tinteggiature"},
+  "pittura ai silicati":{um:"m²",p:18.60,cat:"Tinteggiature"},
+  "verniciatura ferro":{um:"m²",p:22.40,cat:"Tinteggiature"},
+  "pittura":{um:"m²",p:7.60,cat:"Tinteggiature"},
+  "pittura esterna":{um:"m²",p:14.40,cat:"Tinteggiature"},
+  "carta da parati":{um:"m²",p:20.40,cat:"Tinteggiature"},
+  "finestra PVC doppio vetro":{um:"cad",p:542.00,cat:"Serramenti"},
+  "finestra alluminio taglio termico":{um:"cad",p:628.00,cat:"Serramenti"},
+  "finestra legno":{um:"cad",p:798.00,cat:"Serramenti"},
+  "porta interna":{um:"cad",p:348.00,cat:"Serramenti"},
+  "porta blindata classe 3":{um:"cad",p:892.00,cat:"Serramenti"},
+  "portone ingresso":{um:"cad",p:1148.00,cat:"Serramenti"},
+  "persiana alluminio":{um:"cad",p:268.00,cat:"Serramenti"},
+  "tapparella avvolgibile":{um:"cad",p:188.00,cat:"Serramenti"},
+  "tapparella motorizzata":{um:"cad",p:312.00,cat:"Serramenti"},
+  "vetrocamera basso-emissivo":{um:"m²",p:88.40,cat:"Serramenti"},
+  "cancello pedonale":{um:"cad",p:838.00,cat:"Serramenti"},
+  "cancello carraio motorizzato":{um:"cad",p:1638.00,cat:"Serramenti"},
+  "infissi":{um:"cad",p:628.00,cat:"Serramenti"},
+  "finestra":{um:"cad",p:542.00,cat:"Serramenti"},
+  "porta":{um:"cad",p:348.00,cat:"Serramenti"},
+  "porta blindata":{um:"cad",p:892.00,cat:"Serramenti"},
+  "persiana":{um:"cad",p:268.00,cat:"Serramenti"},
+  "tapparella":{um:"cad",p:312.00,cat:"Serramenti"},
+  "cancello":{um:"cad",p:1638.00,cat:"Serramenti"},
+  "impianto idraulico":{um:"m²",p:62.40,cat:"Impianti Idraulici"},
+  "tubazione rame 3/4":{um:"m",p:23.40,cat:"Impianti Idraulici"},
+  "tubazione multistrato":{um:"m",p:18.40,cat:"Impianti Idraulici"},
+  "scarico PVC 110":{um:"m",p:15.20,cat:"Impianti Idraulici"},
+  "impianto gas":{um:"m²",p:32.80,cat:"Impianti Idraulici"},
+  "vaso wc sospeso":{um:"cad",p:378.00,cat:"Impianti Idraulici"},
+  "lavabo":{um:"cad",p:228.00,cat:"Impianti Idraulici"},
+  "bidet":{um:"cad",p:198.00,cat:"Impianti Idraulici"},
+  "doccia":{um:"cad",p:648.00,cat:"Impianti Idraulici"},
+  "vasca":{um:"cad",p:898.00,cat:"Impianti Idraulici"},
+  "rubinetteria bagno":{um:"cad",p:262.00,cat:"Impianti Idraulici"},
+  "sanitari":{um:"cad",p:818.00,cat:"Impianti Idraulici"},
+  "scarico":{um:"cad",p:168.00,cat:"Impianti Idraulici"},
+  "rubinetteria":{um:"cad",p:262.00,cat:"Impianti Idraulici"},
+  "impianto elettrico":{um:"m²",p:52.40,cat:"Impianti Elettrici"},
+  "quadro elettrico":{um:"cad",p:642.00,cat:"Impianti Elettrici"},
+  "punto luce":{um:"cad",p:49.40,cat:"Impianti Elettrici"},
+  "presa elettrica":{um:"cad",p:42.40,cat:"Impianti Elettrici"},
+  "videocitofono":{um:"cad",p:628.00,cat:"Impianti Elettrici"},
+  "impianto allarme":{um:"cad",p:1148.00,cat:"Impianti Elettrici"},
+  "fotovoltaico":{um:"kWp",p:1780.00,cat:"Impianti Elettrici"},
+  "impianto riscaldamento":{um:"m²",p:72.40,cat:"Impianti Termici"},
+  "impianto radiante":{um:"m²",p:72.40,cat:"Impianti Termici"},
+  "caldaia":{um:"cad",p:2098.00,cat:"Impianti Termici"},
+  "climatizzatore":{um:"cad",p:1328.00,cat:"Impianti Termici"},
+  "radiatore":{um:"cad",p:228.00,cat:"Impianti Termici"},
+  "pavimento esterno porfido":{um:"m²",p:72.40,cat:"Opere Esterne"},
+  "recinzione muratura":{um:"m",p:98.40,cat:"Opere Esterne"},
+  "muro di cinta":{um:"m²",p:128.40,cat:"Opere Esterne"},
+  "ringhiera":{um:"m",p:118.40,cat:"Opere Esterne"},
+  "scala":{um:"m",p:268.00,cat:"Opere Esterne"},
+  "operaio comune":{um:"h",p:24.91,cat:"Manodopera"},
+  "operaio qualificato":{um:"h",p:27.78,cat:"Manodopera"},
+  "operaio specializzato":{um:"h",p:29.94,cat:"Manodopera"},
+  "caposquadra":{um:"h",p:31.62,cat:"Manodopera"},
+  "manodopera":{um:"h",p:24.91,cat:"Manodopera"},
+  "muratore":{um:"h",p:29.94,cat:"Manodopera"},
+  "piastrellista":{um:"h",p:29.94,cat:"Manodopera"},
+  "elettricista":{um:"h",p:29.94,cat:"Manodopera"},
+  "idraulico":{um:"h",p:29.94,cat:"Manodopera"},
+  "imbianchino":{um:"h",p:27.78,cat:"Manodopera"},
+  "carpentiere":{um:"h",p:29.94,cat:"Manodopera"},
+  "saldatore":{um:"h",p:31.62,cat:"Manodopera"},
+  "geometra":{um:"h",p:55.00,cat:"Manodopera"},
+  "ponteggio":{um:"m²",p:6.20,cat:"Ponteggi"},
+  "ponteggio mensile":{um:"m²",p:6.20,cat:"Ponteggi"},
+  "piattaforma aerea":{um:"h",p:16.00,cat:"Ponteggi"},
+  "noleggio autocarro":{um:"h",p:84.10,cat:"Noleggi"},
+  "noleggio gru":{um:"gg",p:876.80,cat:"Noleggi"},
+  "noleggio escavatore":{um:"h",p:68.40,cat:"Noleggi"},
+  "noleggio betoniera":{um:"gg",p:82.00,cat:"Noleggi"},
+};
+
+// Variabili di stato globali per il prezziario attivo
+let prezziarioGlobale='DEI'; // 'DEI', 'SIC', 'MAN' (manuale)
+function getPrezziario(nome){
+  if(nome==='SIC') return L_SIC;
+  return L;
+}
+
+
+const ALIAS={
+  "gresso":"gres","grès":"gres","gress":"gres","porcellanato":"gres porcellanato",
+  "porcellanto":"gres porcellanato","marmo":"marmo","marmi":"marmo",
+  "granito":"granito","graniti":"granito","pietra":"pietra lavica","lavica":"pietra lavica",
+  "pavimento":"piastrelle","pavimentazione":"piastrelle","pavimenti":"piastrelle",
+  "piastrella":"piastrelle","ceramiche":"ceramica","legno":"parquet",
+  "intonacato":"intonaco","intonacatura":"intonaco","intonaci":"intonaco",
+  "pitturare":"pittura","tinteggiatura":"pittura","verniciatura":"pittura",
+  "copertura":"tetto","tegole":"tetto","cemento":"cemento armato",
+  "cls":"cemento armato","calcestruzzo armato":"cemento armato",
+  "mattoni":"muratura mattoni","laterizio":"muratura","muro":"muratura","muri":"muratura",
+  "demolire":"demolizione","abbattuto":"demolizione","demolito":"demolizione",
+  "cappottino":"cappotto","isolamento":"isolamento termico",
+  "controsoffitti":"controsoffitto","cartongessi":"cartongesso",
+  "rivestire":"rivestimento","infisso":"infissi","serramenti":"infissi",
+  "finestre":"finestra","porte":"porta","persiane":"persiana","tapparelle":"tapparella",
+  "elettrico":"impianto elettrico","idraulica":"impianto idraulico",
+  "tubi":"impianto idraulico","riscaldamento":"impianto riscaldamento",
+  "condizionatore":"climatizzatore","split":"climatizzatore",
+  "solare":"fotovoltaico","wc":"sanitari","water":"sanitari",
+  "rubinetti":"rubinetteria","ponteggi":"ponteggio","impalcatura":"ponteggio",
+  "operaio":"manodopera","operai":"manodopera",
+  "escavatore":"noleggio escavatore","gru":"noleggio gru","betoniera":"noleggio betoniera",
+  "ferro":"armatura ferro","armatura":"armatura ferro"
+};
+
+function normText(t){
+  const nums={"zero":"0","uno":"1","due":"2","tre":"3","quattro":"4","cinque":"5","sei":"6","sette":"7","otto":"8","nove":"9","dieci":"10","undici":"11","dodici":"12","quindici":"15","venti":"20","trenta":"30","quaranta":"40","cinquanta":"50","sessanta":"60","settanta":"70","ottanta":"80","novanta":"90","cento":"100","duecento":"200","trecento":"300"};
+  let s=t.toLowerCase();
+  for(const[w,n] of Object.entries(nums))s=s.replace(new RegExp('\\b'+w+'\\b','g'),n);
+  return s
+    .replace(/metri\s+quadr[ai]ti?/g,'m²').replace(/metro\s+quadr[ao]/g,'m²')
+    .replace(/\bmq\b/g,'m²').replace(/\bm\s*2\b/g,'m²')
+    .replace(/metri\s+cubi?/g,'m³').replace(/metro\s+cubo/g,'m³')
+    .replace(/\bmc\b/g,'m³').replace(/\bm\s*3\b/g,'m³')
+    .replace(/metri\s+linear[ei]/g,'ml')
+    .replace(/\bore\b/g,'h').replace(/tonnellat[ae]/g,'t')
+    .replace(/cadaun[oa]/g,'cad').replace(/\bpezzi\b/g,'cad')
+    .replace(/giornate?\b/g,'gg');
+}
+
+function getQta(s,pos){
+  const before=s.slice(Math.max(0,pos-70),pos);
+  const after=s.slice(pos,pos+70);
+  const re=/(\d+[.,]?\d*)/g;
+  let m,last=null;
+  while((m=re.exec(before))!==null)last=m;
+  if(last)return parseFloat(last[1].replace(',','.'));
+  const am=after.match(/(\d+[.,]?\d*)/);
+  if(am)return parseFloat(am[1].replace(',','.'));
+  return 1;
+}
+
+function analizza(testo){
+  const s=normText(testo);
+  const voci=[],usati=new Set();
+  for(const[alias,chiave] of Object.entries(ALIAS)){
+    const idx=s.indexOf(alias.toLowerCase());
+    if(idx===-1||usati.has(chiave))continue;
+    const dati=L[chiave];if(!dati)continue;
+    usati.add(chiave);
+    const q=getQta(s,idx);
+    voci.push({descrizione:chiave.charAt(0).toUpperCase()+chiave.slice(1),quantita:q,unitaMisura:dati.um,prezzoUnitario:dati.p,totale:Math.round(q*dati.p*100)/100});
+  }
+  for(const[nome,dati] of Object.entries(L)){
+    if(usati.has(nome))continue;
+    const idx=s.indexOf(nome.toLowerCase());
+    if(idx===-1)continue;
+    usati.add(nome);
+    const q=getQta(s,idx);
+    voci.push({descrizione:nome.charAt(0).toUpperCase()+nome.slice(1),quantita:q,unitaMisura:dati.um,prezzoUnitario:dati.p,totale:Math.round(q*dati.p*100)/100});
+  }
+  return{trascrizione:testo,riepilogo:voci.length?voci.map(v=>v.descrizione).join(', '):'Nessuna voce riconosciuta',voci,costoTotale:Math.round(voci.reduce((a,v)=>a+v.totale,0)*100)/100};
+}
+
+// ════════════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════════════
+let CU=null,CRole='admin',CRR='admin';
+
+function setRole(r){
+  CRole=r;
+  document.getElementById('tA').classList.toggle('on',r==='admin');
+  document.getElementById('tE').classList.toggle('on',r==='employee');
+}
+function setRR(r){
+  CRR=r;
+  document.getElementById('rA').classList.toggle('on',r==='admin');
+  document.getElementById('rE').classList.toggle('on',r==='employee');
+  document.getElementById('rnA').style.display=r==='admin'?'block':'none';
+  document.getElementById('rnE').style.display=r==='employee'?'block':'none';
+}
+
+function generaUsername(){
+  const nome=document.getElementById('rn').value.trim();
+  const cog=document.getElementById('rc').value.trim();
+  if(!nome&&!cog){
+    document.getElementById('ru').value='';
+    document.getElementById('ru').placeholder='Inserisci prima nome e cognome…';
+    const b=document.getElementById('ru-badge');if(b)b.style.display='none';
+    document.getElementById('ru-hint').textContent='';
+    document.getElementById('reg-preview').style.display='none';
+    return;
+  }
+  // Genera username: nome.cognome in minuscolo, no spazi, no accenti
+  const clean=s=>s.toLowerCase()
+    .replace(/[àáâä]/g,'a').replace(/[èéêë]/g,'e')
+    .replace(/[ìíîï]/g,'i').replace(/[òóôö]/g,'o')
+    .replace(/[ùúûü]/g,'u').replace(/[^a-z0-9]/g,'');
+  const base=nome&&cog?clean(nome)+'.'+clean(cog):clean(nome||cog);
+  // Controlla duplicati e aggiunge numero se necessario
+  const users=DB.list('users');
+  let username=base,n=2;
+  while(users.some(u=>u.username===username)){username=base+n;n++;}
+  document.getElementById('ru').value=username;
+  const badge=document.getElementById('ru-badge');if(badge)badge.style.display='inline';
+  document.getElementById('ru-hint').textContent='✓ Generato automaticamente — puoi modificarlo';
+  // Mostra preview
+  const fullName=[nome,cog].filter(Boolean).join(' ');
+  document.getElementById('prev-nome').textContent=fullName;
+  document.getElementById('prev-user').textContent=username;
+  document.getElementById('reg-preview').style.display='block';
+}
+function goReg(){
+  document.getElementById('CL').style.display='none';
+  document.getElementById('CR').style.display='block';
+  document.getElementById('RE').textContent='';
+  const hasAdmin=DB.list('users').some(u=>u.role==='admin');
+  const btnA=document.getElementById('rA');
+  btnA.disabled=hasAdmin;
+  btnA.style.opacity=hasAdmin?'.35':'1';
+  btnA.title=hasAdmin?'Titolare già registrato':'';
+  if(hasAdmin)setRR('employee');else setRR('admin');
+}
+function goLogin(){
+  document.getElementById('CR').style.display='none';
+  document.getElementById('CL').style.display='block';
+  document.getElementById('LE').textContent='';
+}
+function doLogin(){
+  const u=document.getElementById('lu').value.trim().toLowerCase();
+  const p=document.getElementById('lp').value;
+  const E=document.getElementById('LE');
+  E.textContent='';
+  if(!u||!p){E.textContent='Inserisci username e password.';return}
+  const users=DB.list('users');
+  // Cerca per username (case insensitive)
+  const user=users.find(x=>x.username.toLowerCase()===u&&x.password===p);
+  if(!user){
+    E.textContent='Username o password errati.';
+    return;
+  }
+  if(user.role!==CRole){
+    E.textContent='Ruolo errato: questo account è '+(user.role==='admin'?'Titolare':'Dipendente')+'.';
+    return;
+  }
+  loginOk(user);
+}
+function doReg(){
+  const nome=document.getElementById('rn').value.trim();
+  const cog=document.getElementById('rc').value.trim();
+  const u=document.getElementById('ru').value.trim(); // mantieni maiuscole/minuscole come inserite
+  const p=document.getElementById('rp').value;
+  const p2=document.getElementById('rp2').value;
+  const E=document.getElementById('RE');
+  E.textContent='';
+  if(!u||!p){E.textContent='Username e password obbligatori.';return}
+  if(u.length<3){E.textContent='Username minimo 3 caratteri.';return}
+  if(p.length<6){E.textContent='Password minimo 6 caratteri.';return}
+  if(p!==p2){E.textContent='Le password non coincidono.';return}
+  const users=DB.list('users');
+  if(CRR==='admin'&&users.some(x=>x.role==='admin')){E.textContent='Titolare già registrato.';return}
+  if(users.some(x=>x.username.toLowerCase()===u.toLowerCase())){E.textContent='Username già in uso.';return}
+  const full=[nome,cog].filter(Boolean).join(' ')||u;
+  const av=full.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()||'??';
+  const newUser={id:uid(),username:u,password:p,name:full,role:CRR,avatar:av};
+  // Salva e verifica
+  DB.push('users',newUser);
+  const saved=DB.list('users').find(x=>x.id===newUser.id);
+  if(!saved){E.textContent='Errore nel salvataggio. Prova a liberare spazio nel browser.';return}
+  loginOk(newUser);
+}
+function loginOk(user){
+  CU=user;
+  // Nessuna sessione: ogni refresh → login
+  document.getElementById('LS').style.display='none';
+  document.getElementById('APP').style.display='block';
+  ['lu','lp','rn','rc','ru','rp','rp2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  initApp();
+}
+function doLogout(){
+  CU=null;
+  document.getElementById('APP').style.display='none';
+  document.getElementById('LS').style.display='flex';
+  document.getElementById('MAIN').innerHTML='';
+  document.getElementById('SNAV').innerHTML='';
+}
+
+// ════════════════════════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════════════════════════
+function initApp(){
+  document.getElementById('SAV').textContent=CU.avatar;
+  document.getElementById('SNM').textContent=CU.name;
+  document.getElementById('SRL').textContent=CU.role==='admin'?'Titolare':'Dipendente';
+  if(CU.role==='admin')navAdmin();else navEmp();
+}
+function navAdmin(){
+  document.getElementById('SNAV').innerHTML=`
+    <div class="nav-sec">Gestione</div>
+    <button class="ni" id="n-dash" onclick="go('dash')">📊 Dashboard</button>
+    <button class="ni" id="n-cant" onclick="go('cant')">🏗️ Cantieri</button>
+    <button class="ni" id="n-dip" onclick="go('dip')">👷 Dipendenti</button>
+    <div class="nav-sec">Documenti</div>
+    <button class="ni" id="n-comp" onclick="go('comp')">📄 Computi Metrici</button>
+    <button class="ni" id="n-cont" onclick="go('cont')">💶 Contabilità</button>
+    <div class="nav-sec">Attività</div>
+    <button class="ni" id="n-logs" onclick="go('logs')">📋 Report Giornalieri</button>
+    <button class="ni" id="n-list" onclick="go('list')">📑 Listino Prezzi</button>`;
+  go('dash');
+}
+function navEmp(){
+  document.getElementById('SNAV').innerHTML=`
+    <div class="nav-sec">Lavoro</div>
+    <button class="ni" id="n-ecant" onclick="go('ecant')">🏗️ Cantieri</button>
+    <button class="ni" id="n-erep" onclick="go('erep')">🎙️ Report Giornaliero</button>
+    <button class="ni" id="n-esto" onclick="go('esto')">📋 I miei Report</button>`;
+  go('ecant');
+}
+function go(page){
+  // Se stiamo uscendo dalla pagina computo con dati non salvati → avvisa
+  if(activePage==='comp' && page!=='comp'){
+    const hasData=computoVoci.some(v=>v.lavorazione&&calcQtaTotale(v)>0);
+    if(hasData){
+      // Autosalva bozza prima di uscire
+      autosaveBozza();
+      // Mostra notifica discreta (non blocca)
+      mostraBozzaNotice();
+    }
+  }
+  activePage=page;
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
+  const nb=document.getElementById('n-'+page);if(nb)nb.classList.add('on');
+  const pages={dash:pgDash,cant:pgCant,dip:pgDip,comp:pgComp,cont:pgCont,logs:pgLogs,list:pgList,ecant:pgECant,erep:pgERep,esto:pgESto};
+  if(pages[page])document.getElementById('MAIN').innerHTML=pages[page]();
+  if(page==='comp'){
+    setTimeout(()=>{
+      const bozza=DB.get('comp_bozza');
+      if(bozza && bozza.voci && bozza.voci.length>0){
+        // Ripristina bozza esistente
+        ripristinaBozza(bozza);
+      }else{
+        computoVoci=[];
+        initComputoVoci();
+      }
+    },30);
+  }
+}
+let activePage='';
+
+function autosaveBozza(){
+  // Salva lo stato corrente del form computo nel localStorage
+  const bozza={
+    titolo:document.getElementById('cp-t')?.value||'',
+    cantId:document.getElementById('cp-c')?.value||'',
+    cliente:document.getElementById('cp-cl')?.value||'',
+    azienda:document.getElementById('cp-az')?.value||'',
+    iva:document.getElementById('cp-iva')?.value||'22',
+    voci:computoVoci.map(v=>({...v})), // copia profonda
+    savedAt:new Date().toISOString()
+  };
+  DB.set('comp_bozza',bozza);
+}
+
+function ripristinaBozza(bozza){
+  computoVoci=bozza.voci||[];
+  renderVoci();
+  // Ripristina campi form
+  setTimeout(()=>{
+    if(bozza.titolo&&document.getElementById('cp-t'))document.getElementById('cp-t').value=bozza.titolo;
+    if(bozza.cantId&&document.getElementById('cp-c'))document.getElementById('cp-c').value=bozza.cantId;
+    if(bozza.cliente&&document.getElementById('cp-cl'))document.getElementById('cp-cl').value=bozza.cliente;
+    if(bozza.azienda&&document.getElementById('cp-az'))document.getElementById('cp-az').value=bozza.azienda;
+    if(bozza.iva&&document.getElementById('cp-iva'))document.getElementById('cp-iva').value=bozza.iva;
+    aggTotale();
+    // Mostra banner di ripristino
+    const d=new Date(bozza.savedAt);
+    const when=d.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    mostraBanner(`📂 Bozza ripristinata automaticamente (salvata il ${when}). Completa e premi "Salva e genera PDF".`,'ainfo');
+  },60);
+}
+
+function mostraBozzaNotice(){
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 20px;border-radius:8px;font-size:.82rem;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  const s=document.createElement('span');s.textContent='📋 Bozza salvata automaticamente';
+  const b1=document.createElement('button');
+  b1.textContent='Continua →';
+  b1.style.cssText='background:var(--gold);border:none;color:#fff;padding:5px 12px;border-radius:5px;cursor:pointer;font-size:.79rem;font-weight:600;font-family:inherit';
+  b1.onclick=function(){go('comp');banner.remove();};
+  const b2=document.createElement('button');
+  b2.textContent='✕';
+  b2.style.cssText='background:none;border:none;color:#888;cursor:pointer;font-size:1rem;padding:2px 6px';
+  b2.onclick=function(){banner.remove();};
+  banner.appendChild(s);banner.appendChild(b1);banner.appendChild(b2);
+  document.body.appendChild(banner);
+  setTimeout(function(){if(banner.parentNode)banner.remove();},6000);
+}
+function mostraBanner(msg,tipo){
+  const cont=document.getElementById('MAIN');
+  if(!cont)return;
+  const div=document.createElement('div');
+  div.className='alert '+(tipo||'ainfo');
+  div.style.cssText='margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem';
+  div.innerHTML=`<span>${msg}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;cursor:pointer;font-size:1rem;color:inherit;opacity:.6;flex-shrink:0">✕</button>`;
+  cont.insertBefore(div,cont.firstChild);
+}
+
+function cancelBozza(){
+  DB.del('comp_bozza');
+  computoVoci=[];
+  initComputoVoci();
+  // Pulisci campi
+  ['cp-t','cp-cl','cp-az'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  go('comp');
+}
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function today(){return new Date().toLocaleDateString('it-IT')}
+function fmt(n){return parseFloat(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function openM(h){document.getElementById('MB').innerHTML=h;document.getElementById('MOD').style.display='flex'}
+function closeM(){document.getElementById('MOD').style.display='none'}
+
+// ════════════════════════════════════════════════════════════
+// DESCRIZIONI TECNICHE PRE-SCRITTE — stile computo metrico siciliano
+// ════════════════════════════════════════════════════════════
+const DESC_TECNICHE={
+  // ── DEMOLIZIONI ──────────────────────────────────────────────────────────
+  "demolizione muratura mattoni":"Demolizione di muratura in mattoni pieni o forati di qualsiasi spessore, eseguita con martello demolitore e intervento manuale ove necessario, compreso taglio secondo linee definite, puntellamenti, calo dei materiali di risulta, carico, trasporto e smaltimento autorizzato in discarica entro 10 km.",
+  "demolizione muratura c.a.":"Demolizione di struttura in cemento armato (pilastri, travi, setti), eseguita con martello demolitore elettrico o pneumatico, compreso taglio armature, puntellamenti necessari, calo dei materiali di risulta, carico, trasporto e smaltimento autorizzato in discarica.",
+  "demolizione tramezza":"Demolizione di tramezza in laterizio forato di qualsiasi spessore, eseguita con martello demolitore, compreso il taglio secondo linee prestabilite, rimozione dell'intonaco sulle superfici adiacenti, raccolta, carico, trasporto e smaltimento del materiale di risulta.",
+  "demolizione solaio latero-cementizio":"Demolizione di solaio latero-cementizio compreso massetto, pignatte e caldana, eseguita con martello demolitore e intervento manuale, compreso puntellamento delle strutture adiacenti, calo, carico, trasporto e smaltimento del materiale di risulta in discarica.",
+  "demolizione pavimento piastrelle":"Rimozione di pavimento in piastrelle ceramiche o gres di qualsiasi formato, compreso il massetto di allettamento, raccolta, carico, trasporto e smaltimento del materiale di risulta. Inclusa la pulizia del sottofondo.",
+  "demolizione massetto":"Demolizione di massetto in calcestruzzo magro o alleggerito, eseguita con martello demolitore, compreso raccolta, carico, trasporto e smaltimento in discarica autorizzata.",
+  "demolizione intonaco":"Rimozione di intonaco interno o esterno di qualsiasi spessore e natura, eseguita con martello demolitore o scalpello, compreso raccolta, carico, trasporto e smaltimento del materiale di risulta. Inclusa la pulizia del supporto.",
+  "demolizione rivestimento ceramica":"Rimozione di rivestimento ceramico da pareti interne o esterne, compreso strato di colla, raccolta, carico, trasporto e smaltimento del materiale di risulta. Inclusa la pulizia e rasatura del supporto.",
+  "demolizione copertura coppi":"Rimozione del manto di copertura in coppi di laterizio compreso listelli in legno, compreso puntellamenti, calo del materiale, carico, trasporto e smaltimento. Materiale recuperabile da valutarsi a parte.",
+  "rimozione infisso finestra":"Rimozione di infisso di qualsiasi tipo e dimensione (finestra, portafinestra), compreso telaio, controtelaio, eventuali cassonetti, raccolta, carico, trasporto e smaltimento. Incluso il ripristino dell'intonaco sulle spalle.",
+  "rimozione porta interna":"Rimozione di porta interna comprensiva di telaio, stipiti, soglia e controtelaio, di qualsiasi dimensione, compreso raccolta, carico, trasporto e smaltimento del materiale.",
+  "rimozione sanitari":"Rimozione di apparecchio igienico sanitario (vaso, bidet, lavabo, vasca), compreso disconnessione dalle alimentazioni idriche e di scarico, carico, trasporto e smaltimento. Inclusa la tappatura delle tubazioni.",
+  "rimozione caldaia":"Rimozione di caldaia murale o a terra, compreso disconnessione dall'impianto termico, idraulico e del gas, smontaggio del camino, carico, trasporto e smaltimento presso impianto autorizzato.",
+  "rimozione pavimento legno":"Rimozione di pavimento in parquet o legno massello compreso chiodatura o incollaggio, raccolta, carico, trasporto e smaltimento o recupero del materiale.",
+  "smaltimento macerie":"Raccolta, carico, trasporto e smaltimento autorizzato di macerie inerti da demolizione presso impianto autorizzato, compreso formulario rifiuti con codice CER 17.01.07, pesatura e ricevuta di smaltimento. Prezzo per tonnellata a peso netto.",
+  "trasporto macerie":"Trasporto di macerie inerti da demolizione con autocarro, da cantiere a discarica autorizzata entro 15 km, compreso manovra, carico meccanico e scarico. Prezzo per metro cubo di materiale trasportato.",
+  "demolizione":"Demolizione di elemento costruttivo di qualsiasi tipo e natura, eseguita con mezzi meccanici e intervento manuale ove necessario, compreso puntellamenti, calo dei materiali, carico, trasporto e smaltimento autorizzato in discarica.",
+
+  // ── SCAVI ────────────────────────────────────────────────────────────────
+  "scavo a mano":"Scavo eseguito a mano in terreno di qualsiasi natura e consistenza, compreso spianamento del fondo e regolarizzazione delle pareti, allontanamento dell'acqua eventualmente presente, carico e trasporto del materiale di risulta ad idoneo sito di deposito o smaltimento.",
+  "scavo meccanico":"Scavo eseguito con mezzo meccanico (escavatore o pala meccanica) in terreno di qualsiasi natura, compreso spianamento del fondo, regolarizzazione delle pareti, carico e trasporto del materiale di risulta. Escluse rocce da abbattersi con esplosivo.",
+  "scavo fondazioni":"Scavo di fondazione per strutture di qualsiasi tipo, eseguito con mezzo meccanico o a mano nei tratti inaccessibili ai mezzi, compreso spianamento e regolarizzazione del fondo, consolidamento delle pareti se necessario, aggottamento dell'acqua, carico e trasporto del materiale di risulta.",
+  "riempimento e costipazione":"Reinterro e costipazione con materiale idoneo (misto granulare, tout-venant), eseguiti a strati di 30 cm con macchina vibrante, compreso bagnatura, formazione di pendenze e quant'altro necessario per ottenere il costipamento prescritto.",
+
+  // ── STRUTTURE C.A. ───────────────────────────────────────────────────────
+  "cemento armato fondazioni":"Fornitura e posa in opera di conglomerato cementizio armato per fondazioni (plinti, travi rovesce, platee), con Rck≥25 N/mm² classe esposizione XC2, compreso armatura in acciaio B450C, casseforme, vibratura meccanica del getto, stagionatura e quant'altro necessario. Incluso disarmo e demolizione casseforme. Misurato a volume geometrico.",
+  "cemento armato elevazioni":"Fornitura e posa in opera di conglomerato cementizio armato per elevazioni (pilastri, setti, pareti), con Rck≥25 N/mm² classe esposizione XC1, compreso armatura in acciaio B450C con relativo collegamento, casseforme e puntellamenti, vibratura meccanica, stagionatura e disarmo.",
+  "cemento armato pilastri":"Fornitura e posa in opera di conglomerato cementizio armato per pilastri, con Rck≥30 N/mm², compreso armatura in acciaio B450C con staffe e ganci di collegamento, casseforme metalliche o in legno, vibratura meccanica del getto, stagionatura e disarmo.",
+  "cemento armato travi":"Fornitura e posa in opera di conglomerato cementizio armato per travi (principali e secondarie), con Rck≥25 N/mm², compreso armatura in acciaio B450C, staffe, ancoraggi, casseforme e puntellamenti, vibratura meccanica, stagionatura e disarmo.",
+  "cemento armato":"Fornitura e posa in opera di conglomerato cementizio armato per strutture di qualsiasi tipo, con Rck≥25 N/mm² classe di esposizione adeguata all'utilizzo, compreso armatura in acciaio B450C, casseforme, vibratura meccanica del getto, stagionatura e disarmo. Inclusa la pulizia delle superfici.",
+  "calcestruzzo non armato":"Fornitura e posa in opera di calcestruzzo non armato Rck≥15 N/mm² per magrone di fondazione, massetti strutturali, riempimenti e sottofondazioni, compreso casseforme ove necessario, vibratura e stagionatura.",
+  "getto fondazioni":"Fornitura e posa in opera di conglomerato cementizio armato per fondazioni, con Rck≥25 N/mm² classe esposizione XC2, compreso armatura in acciaio B450C calcolata da strutturista, casseforme, vibratura meccanica del getto, stagionatura, disarmo e quant'altro per dare l'opera finita.",
+  "cassaforma piana":"Fornitura, montaggio e smontaggio di cassaforma piana in legno o metallica per strutture in calcestruzzo armato (travi, platee, pareti), compreso puntellamenti, disarmante, disfomatura e ripristino.",
+  "armatura ferro B450C":"Fornitura, sagomatura e posa in opera di armatura in acciaio B450C per strutture in calcestruzzo armato, compreso lavorazione, legatura con filo di ferro ricotto, distanziatori per il rispetto del copriferro prescritto. Incluso certificato di qualificazione del produttore.",
+  "rete elettrosaldata":"Fornitura e posa in opera di rete elettrosaldata in acciaio B450C (tipo ST o ST/ST) per solai e massetti strutturali, compreso sovrapposizioni, ancoraggi e tagli, distanziatori. Incluso certificato di qualificazione.",
+
+  // ── MURATURE ─────────────────────────────────────────────────────────────
+  "muratura mattoni forati 8cm":"Esecuzione di tramezza in mattoni forati (8x25x25 cm) con malta bastarda dosata a 200 kg di calce, posta in opera a corsi regolari con sfalsamento dei giunti verticali, compreso rinforzi metallici agli angoli e alle imboccature, raccordo con le strutture esistenti e pulizia. Inclusa la bagnatura dei laterizi.",
+  "muratura mattoni forati 12cm":"Esecuzione di muratura in mattoni forati (12x25x25 cm) con malta bastarda dosata a 200 kg di calce, posta in opera a corsi regolari con sfalsamento dei giunti verticali, compreso rinforzi agli angoli e alle imboccature, raccordo con strutture esistenti e pulizia.",
+  "muratura mattoni forati 20cm":"Esecuzione di muratura portante o di tompagno in mattoni forati (20x25x25 cm) con malta di cemento e calce, posta in opera a corsi regolari, compreso rinforzi in corrispondenza di aperture, architravi, raccordo con le strutture in c.a. e pulizia finale.",
+  "muratura mattoni pieni":"Esecuzione di muratura in mattoni pieni (6x12x25 cm) con malta di calce idraulica dosata a 250 kg/m³, posta in opera a corsi regolari con sfalsamento dei giunti verticali di almeno 1/4 della lunghezza, compreso stilatura dei giunti a vista, pulizia e bagnatura.",
+  "muratura blocchi cls aerato":"Esecuzione di muratura in blocchi di calcestruzzo aerato autoclavato (tipo Gasbeton o similare), con colla speciale in strato sottile da 1-3 mm, compreso taglio a misura, rinforzo con armature in acciaio nei corsi di irrigidimento e in corrispondenza delle aperture, raccordo con strutture.",
+  "muratura blocchi porizzati":"Esecuzione di muratura in blocchi di laterizio porizzato (tipo Poroton), con malta termica di allettamento, compreso taglio a misura, rinforzo in acciaio ai corsi orizzontali di irrigidimento, architravi prefabbricate alle aperture, raccordo con strutture portanti.",
+  "muratura pietra irregolare":"Esecuzione di muratura in pietra locale (calcarea, lavica o arenaria) a corsi irregolari, con malta bastarda di calce e cemento dosata a 250 kg/m³, compreso selezione e posa della pietra, stilatura dei giunti, graffe in acciaio inox ai cantonali e pulizia finale.",
+  "muratura tufo":"Esecuzione di muratura in conci di tufo (20x20x40 cm) con malta di calce idraulica, posta in opera a corsi regolari con sfalsamento dei giunti, compreso bagnatura dei conci, formazione di cantonali con conci squadrati, stilatura dei giunti e pulizia.",
+  "tramezza 8cm":"Esecuzione di tramezza divisoria interna in mattoni forati sp. 8 cm con malta bastarda, compreso raccordo perimetrale con strutture esistenti mediante schiuma poliuretanica o profilo metallico antivibrante, rinforzo agli angoli con rete in fibra di vetro e quant'altro per dare l'opera finita.",
+  "tramezza 12cm":"Esecuzione di tramezza divisoria interna in mattoni forati sp. 12 cm con malta bastarda, compreso raccordo perimetrale, rinforzo in acciaio nelle zone soggette a sollecitazioni, staffatura alla struttura portante e quant'altro per dare l'opera finita.",
+  "muratura":"Esecuzione di muratura in laterizio di qualsiasi tipo e spessore, con malta bastarda di calce e cemento, compreso bagnatura, formazione di cantonali, raccordo con le strutture esistenti, rinforzi in acciaio ove necessario e pulizia finale.",
+
+  // ── CONSOLIDAMENTO ───────────────────────────────────────────────────────
+  "cuci-scuci muratura":"Intervento di cuci-scuci su muratura esistente lesionata o degradata, eseguito con rimozione dei mattoni danneggiati e sostituzione con mattoni nuovi della stessa tipologia legati con malta a base di calce idraulica naturale, compreso pulizia della lesione, scuci su larghezza minima 60 cm e ripristino dell'intonaco.",
+  "iniezioni cementizie":"Consolidamento di muratura mediante iniezioni di malta cementizia a bassa pressione (max 3 bar), compreso foratura a maglia regolare (ogni 20-30 cm), pulizia e abbeveraggio dei fori, iniezione con pompa manuale o meccanica di malta fluida premiscelata, tappatura e pulizia finale.",
+  "rete GFRP rinforzo":"Applicazione di rete in fibra di vetro (GFRP) per rinforzo strutturale di murature, compreso preparazione del supporto, applicazione di primer epossidico, posa della rete con sovrapposizioni minime di 20 cm, strato di finitura con malta fibrorinforzata e quant'altro.",
+  "intonaco armato":"Realizzazione di intonaco armato su entrambe le facce della muratura esistente con rete elettrosaldata 20x20 cm Ø5 fissata con tasselli da 10 cm ogni 50 cm, compreso preparazione del supporto, applicazione del calcestruzzo proiettato sp. 40 mm per lato, cordoli in c.a.",
+  "tiranti acciaio":"Fornitura e posa in opera di tiranti in acciaio inox AISI 316 per collegamento e cerchiatura di murature, compreso perforazione, pulizia, iniezione di resina epossidica, inserimento del tirante con tensionamento e capitelli di ancoraggio.",
+  "micropali":"Esecuzione di micropali in acciaio o in c.a. per consolidamento fondazionale o di versante, compreso perforazione a rotazione o percussione, posa del tubo in acciaio o armatura, iniezione di malta cementizia, testa del micropalo e quant'altro per dare l'opera finita.",
+
+  // ── SOLAI ────────────────────────────────────────────────────────────────
+  "solaio latero-cementizio H16+4":"Fornitura e posa in opera di solaio latero-cementizio con travetti prefabbricati in cls precompresso H16 e pignatte in laterizio, compreso getto di completamento (caldana) in cls Rck≥25 N/mm² sp. 4 cm con rete elettrosaldata Ø6 20x20, puntellatura, disarmo e pulizia.",
+  "solaio latero-cementizio H20+4":"Fornitura e posa in opera di solaio latero-cementizio con travetti prefabbricati H20 e pignatte in laterizio, compreso caldana in cls Rck≥25 N/mm² sp. 4 cm con rete elettrosaldata Ø6 20x20, cordoli perimetrali, puntellatura, vibrazione, disarmo e pulizia.",
+  "solaio in legno":"Fornitura e posa in opera di solaio in legno lamellare GL24h composto da travi principali e secondarie, compreso tavolato in legno di abete sp. 25 mm, connettori metallici, trattamento impregnante contro insetti e funghi, telo freno vapore e quant'altro per dare l'opera finita.",
+  "solaio prefabbricato":"Fornitura e posa in opera di solaio prefabbricato in lastre in c.a. precompresso (tipo predalles o alveolari), compreso posa con autogrù, getto di completamento in cls Rck≥25 N/mm² con rete elettrosaldata, stagionatura e quant'altro per dare l'opera finita.",
+  "solaio":"Fornitura e posa in opera di solaio latero-cementizio con travetti prefabbricati e pignatte in laterizio, compreso caldana in cls Rck≥25 N/mm² con rete elettrosaldata, puntellatura, cordoli perimetrali, vibrazione, stagionatura e disarmo.",
+
+  // ── COPERTURE ────────────────────────────────────────────────────────────
+  "tetto coppi laterizio":"Rifacimento manto di copertura in coppi di laterizio (coppo e sotto-coppo), posato con malta di cemento e calce dosata a 250 kg/m³ su listelli in legno trattato 5x3 cm, compreso rimozione del vecchio manto con smaltimento, nuovo massetto di pendenza, colmo e gronda, quant'altro per dare l'opera finita.",
+  "tetto coppi siciliani":"Rifacimento manto di copertura con coppi siciliani tradizionali (formella e coppo) posati con malta di calce sulla tradizionale tecnica a raso filo, compreso rimozione del vecchio manto e smaltimento, fissaggio del primo e ultimo corso, colmo, gronda e ripristino delle fiancate.",
+  "tetto piano guaina":"Rifacimento di copertura piana con impermeabilizzazione in guaina bituminosa a doppio strato (primo strato autoprotetto sp. 3 mm, secondo strato ardesiato sp. 4 mm), compreso primer bituminoso, massetto di pendenza min. 1.5%, risvolti sulle pareti h. min. 20 cm, lattonerie e quant'altro.",
+  "rifacimento manto coppi":"Parziale rifacimento del manto di copertura in coppi di laterizio esistente, compreso rimozione dei coppi rotti o mal posati, pulizia e reintegro con coppi nuovi dello stesso tipo, sigillatura dei giunti con malta di calce, verifica della tenuta all'acqua.",
+  "tetto":"Rifacimento del manto di copertura in coppi di laterizio su listelli in legno trattato, compreso rimozione del manto esistente, massetto di pendenza, impermeabilizzazione di supporto, posa dei listelli e dei coppi, colmo, gronda, lattonerie e smaltimento del materiale di risulta.",
+  "coppi":"Fornitura e posa in opera di coppi di laterizio (coppo e formella), posati con malta di calce su listelli in legno, compreso formazione del colmo con coppi appositi, sigillatura dei giunti e quant'altro per dare la copertura finita e impermeabile.",
+  "coibentazione copertura EPS":"Fornitura e posa in opera di isolamento termico della copertura con pannelli in EPS (polistirene espanso sinterizzato) sp. 10 cm, λ≤0.036 W/mK, compreso barriera vapore in polietilene sp. 0.2 mm, fissaggio meccanico con tasselli e quant'altro per dare l'opera finita.",
+  "coibentazione lana roccia":"Fornitura e posa in opera di isolamento termico con pannelli in lana di roccia sp. 10 cm, λ≤0.035 W/mK, densità ≥100 kg/m³, compreso barriera vapore, fissaggio meccanico, sigillatura dei giunti con nastro e quant'altro per dare l'opera finita.",
+  "gronda PVC":"Fornitura e posa in opera di gronda in PVC rigido sp. 2 mm con profilo semicircolare o rettangolare, compreso staffe di ancoraggio ogni 60 cm, giunti, tappi di chiusura, bocchettoni di scarico e quant'altro per dare l'opera finita.",
+  "pluviale PVC":"Fornitura e posa in opera di pluviale di scarico in PVC rigido Ø 100 o 125 mm, compreso staffe di ancoraggio ogni 150 cm, gomiti, manicotti di giunzione, scarico a terra e quant'altro per dare l'opera finita.",
+
+  // ── IMPERMEABILIZZAZIONI ─────────────────────────────────────────────────
+  "impermeabilizzazione guaina 3mm":"Impermeabilizzazione di superfici orizzontali o sub-orizzontali (terrazze, bagni, coperture piane) mediante membrana bituminosa distillata armata con fibra di vetro sp. 3 mm, applicata a fiamma su primer bituminoso, compreso risvolti sulle pareti di min. 20 cm e quant'altro.",
+  "impermeabilizzazione guaina 4mm":"Impermeabilizzazione di superfici orizzontali o verticali con membrana bituminosa distillata armata con poliestere da 250 g/m² sp. 4 mm, applicata a fiamma su primer bituminoso, compreso risvolti, sormonte di min. 10 cm, scossaline di raccordo e quant'altro per la perfetta tenuta all'acqua.",
+  "impermeabilizzazione guaina ardesiata":"Impermeabilizzazione con membrana bituminosa ardesiata sp. 4 mm, applicata a fiamma su membrana di primer e primo strato di guaina non protetta, compreso risvolti sulle pareti h. min. 20 cm, sormonte di min. 12 cm, lattonerie e quant'altro per dare l'opera finita.",
+  "impermeabilizzazione":"Impermeabilizzazione di superfici con guaina bituminosa doppio strato (3+4 mm), applicata a fiamma su primer bituminoso, compreso risvolti, sormonte, scossaline e quant'altro per la perfetta tenuta all'acqua e dare il lavoro finito a regola d'arte.",
+  "guaina":"Fornitura e posa in opera di guaina bituminosa a fiamma sp. indicato, compreso primer bituminoso di ancoraggio, sormonte di min. 10 cm, risvolti sulle pareti di min. 20 cm e quant'altro per dare la perfetta impermeabilizzazione.",
+  "membrana drenante":"Fornitura e posa in opera di membrana drenante in HDPE con georete di separazione, per drenaggio di acque meteoriche da terrazze, giardini pensili e contro-soffitti, compreso fissaggio perimetrale e raccordo con sistemi di scarico.",
+  "risanamento umidità ascendente":"Trattamento di risanamento per umidità di risalita capillare su muratura esistente mediante iniezioni di resina silossanica idrofobizzante a bassa pressione, compreso foratura orizzontale a Ø12 mm ogni 15 cm, pulizia dei fori, iniezione con pompa, tappatura e intonaco deumidificante.",
+
+  // ── INTONACI ─────────────────────────────────────────────────────────────
+  "intonaco civile interno":"Esecuzione di intonaco civile a due mani (rinzaffo e arriccio) su pareti interne in laterizio o calcestruzzo, compreso pulizia del supporto e bagnatura, applicazione di aggrappante ove necessario, formazione di spigoli vivi con paraspigoli in alluminio, raccordi con pavimenti e soffitti e quant'altro.",
+  "intonaco civile esterno":"Esecuzione di intonaco civile a due mani su pareti esterne, compreso pulizia del supporto, aggrappante, ponteggio se non diversamente computato, formazione di spigoli con paraspigoli, raccordi con infissi e cornicioni, rinforzo agli angoli con rete in fibra di vetro e quant'altro.",
+  "intonaco rasante":"Esecuzione di intonaco rasante e finitura liscia su intonaco di supporto già eseguito, con gesso o rasante cementizio, compreso preparazione del supporto, stuccatura di fessure, applicazione del prodotto con spatola in due passate per ottenere superficie perfettamente liscia e pronta per la pittura.",
+  "intonaco deumidificante":"Applicazione di intonaco deumidificante macroporoso (tipo Röfix o similare) su pareti affette da umidità, compreso rimozione dell'intonaco esistente fino alla muratura, pulizia e trattamento del supporto, applicazione in due mani per uno spessore totale di almeno 20 mm.",
+  "intonachino calce":"Applicazione di intonachino a base di calce aerea o idraulica naturale NHL 3.5 per finitura di pareti interne ed esterne, compreso preparazione del supporto, applicazione a cazzuola in un unico strato sp. 5-8 mm e lisciatura finale.",
+  "intonaco":"Esecuzione di intonaco civile a due mani (rinzaffo e arriccio) su superfici murarie di qualsiasi natura, compreso pulizia e bagnatura del supporto, aggrappante ove necessario, formazione di spigoli, raccordi perimetrali e quant'altro per dare la superficie finita.",
+  "rasatura gesso":"Applicazione di rasatura in gesso o rasante a base di cemento bianco su superfici interne (pareti e soffitti), compreso preparazione del supporto, applicazione in due passate con spatola larga, levigatura finale per ottenere superficie perfettamente liscia.",
+  "stucco liscio":"Applicazione di stucco a spatola su pareti e soffitti interni per ottenere superficie perfettamente liscia, compreso preparazione del supporto, prima mano di stucco, carteggiatura, seconda mano di finitura e quant'altro per dare la superficie pronta per la pittura.",
+  "stucco veneziano":"Applicazione di stucco veneziano decorativo a marmorino su pareti interne, compreso preparazione del supporto con primer, applicazione di due strati con spatola metallica tonda in senso incrociato, lucidatura a cera con panno di cotone per ottenere effetto cangiante.",
+  "riparazione intonaco":"Riparazione di intonaco esistente lesionato o distaccato, compreso rimozione delle parti instabili, preparazione del supporto, applicazione di rinzaffo di aggrappaggio e arriccio di finitura, formazione di raccordi con l'intonaco esistente e levigatura.",
+
+  // ── ISOLAMENTO ───────────────────────────────────────────────────────────
+  "cappotto EPS 8cm":"Fornitura e posa in opera di sistema a cappotto termico certificato ETAG 004 con pannelli in EPS (polistirene espanso sinterizzato) sp. 8 cm λ≤0.036 W/mK, compreso colla, tassellatura con min. 8 tasselli/m², primo strato di rasatura armata con rete in fibra di vetro 165 g/m², secondo strato di rasatura e finitura al silossano.",
+  "cappotto EPS 10cm":"Fornitura e posa in opera di sistema a cappotto termico certificato ETAG 004 con pannelli in EPS grafite sp. 10 cm λ≤0.031 W/mK, compreso incollaggio, tassellatura con 8-10 tasselli/m², doppia rasatura armata con rete in fibra di vetro, profili paraspigolo e di partenza, finitura al silossano o silicato.",
+  "cappotto EPS 12cm":"Fornitura e posa in opera di sistema a cappotto termico certificato con pannelli in EPS grafite sp. 12 cm λ≤0.031 W/mK, compreso colla, tassellatura rinforzata (min. 10 tasselli/m²), doppia rasatura armata, profili e accessori, finitura silossanica. Comprensivo di ponteggio se non diversamente computato.",
+  "cappotto lana roccia 10cm":"Fornitura e posa in opera di sistema a cappotto termico con pannelli in lana di roccia sp. 10 cm λ≤0.035 W/mK, densità ≥100 kg/m², compreso colla specifica, tassellatura, rasatura armata con rete in fibra di vetro, profili di raccordo, finitura al silossano e certificazione energetica.",
+  "cappotto sismico armato":"Fornitura e posa in opera di sistema di rinforzo sismico a cappotto con pannelli in EPS sp. 10 cm e rete in GFRP (fibra di vetro) fissata con tasselli ad espansione in acciaio inox, compreso ancoraggi ai solai e alla fondazione, rasatura fibrorinforzata e finitura.",
+  "cappotto":"Fornitura e posa in opera di sistema a cappotto termico in pannelli isolanti sp. indicato, compreso colla, tassellatura, rasatura armata con rete in fibra di vetro, profili di bordo, finitura al silossano e quant'altro per dare l'opera finita a norma ETAG 004.",
+  "isolamento termico":"Fornitura e posa in opera di isolamento termico con pannelli del tipo e spessore indicato, compreso barriera al vapore, fissaggio meccanico o con colla, sigillatura dei giunti e raccordi con le strutture esistenti.",
+  "isolamento acustico pareti":"Fornitura e posa in opera di isolamento acustico di pareti con pannelli in lana di roccia ad alta densità (≥60 kg/m³) sp. 5 cm, compreso struttura metallica di supporto a cavalletto, barriera antivibrante, telo in TNT di separazione e quant'altro per rispettare i valori D2m,nT,w≥40 dB.",
+  "isolamento acustico solaio":"Fornitura e posa in opera di isolamento acustico a pavimento per calpestio con pannelli in lana di vetro compressa sp. 30 mm (Rw≥19 dB), barriera vapore in PE sp. 0.2 mm a giunti sovrapposti di 20 cm, listello perimetrale antivibrante e quant'altro necessario.",
+  "isolamento solaio":"Fornitura e posa in opera di isolamento termico su solaio con pannelli in lana di roccia o EPS sp. 6 cm, compreso barriera al vapore, supporti per il massetto e quant'altro per dare l'opera finita.",
+  "barriera vapore":"Fornitura e posa in opera di barriera al vapore in polietilene sp. 0.2 mm, posata su intera superficie con sovrapposizioni di min. 20 cm, sigillatura dei giunti con nastro adesivo e raccordi perimetrali al battiscopa.",
+
+  // ── MASSETTI ─────────────────────────────────────────────────────────────
+  "massetto cls 5cm":"Esecuzione di massetto in calcestruzzo magro (Rck≥15 N/mm²) sp. 5 cm, compreso staggiatura con maglia di rete elettrosaldata Ø6 20x20, formazione di pendenze ove necessario, cura della stagionatura e quant'altro per dare la superficie pronta per la posa del pavimento.",
+  "massetto cls 8cm":"Esecuzione di massetto in calcestruzzo (Rck≥20 N/mm²) sp. 8 cm, compreso armatura con rete elettrosaldata Ø6 20x20, staggiatura, formazione di pendenze, giunti di dilatazione ogni 25 m² e stagionatura. Incluso taglio con frullino e quant'altro per dare la superficie piana e livellata.",
+  "massetto alleggerito":"Esecuzione di massetto alleggerito con argilla espansa o polistirolo sp. 8-10 cm, compreso rete elettrosaldata di ripartizione, staggiatura, formazione di pendenze verso le bocchette di scarico e quant'altro per dare la superficie pronta per la posa del rivestimento.",
+  "massetto autolivellante":"Esecuzione di massetto autolivellante premiscelato (tipo Ultraplan o similare) sp. 3-5 cm, compreso pulizia del supporto, primer di ancoraggio, stesura con pompa o colata, stagionatura e quant'altro per ottenere superficie perfettamente piana e livellata.",
+  "massetto":"Esecuzione di massetto in calcestruzzo alleggerito con rete elettrosaldata sp. indicato, compreso staggiatura, formazione delle pendenze ove necessario, stagionatura e quant'altro per dare la superficie pronta per la posa del pavimento.",
+  "vespaio aerato cupole":"Realizzazione di vespaio aerato con cupole in polipropilene riciclato (tipo Iglù, Noppo o similare) h. 20-25 cm, compreso rete perimetrale di contenimento, tubo di aerazione/ispezione Ø 110 mm, caldana in cls Rck≥20 N/mm² sp. 5 cm con rete elettrosaldata Ø6 20x20.",
+
+  // ── PAVIMENTI ────────────────────────────────────────────────────────────
+  "piastrelle ceramica":"Fornitura e posa in opera di pavimento in piastrelle ceramiche (escluso materiale), di qualsiasi formato e tipo, compreso massetto di allettamento in malta cementizia, colla adeguata al supporto, distanziatori, giunti di dilatazione ogni 16-25 m², stuccatura con boiacca colorata e pulizia finale.",
+  "gres porcellanato":"Fornitura e posa in opera di pavimento in gres porcellanato (escluso materiale), qualsiasi formato, compreso allettamento con colla ad alte prestazioni a doppia spalmatura, distanziatori da 3 mm, tagli con troncatrice ad acqua, stuccatura epossidica dei giunti e pulizia con prodotti idonei.",
+  "gres":"Fornitura e posa in opera di pavimento in gres ceramico (escluso materiale), compreso allettamento con colla cementizia C2, distanziatori, tagli con troncatrice, stuccatura colorata dei giunti e pulizia finale. Incluse le pezze speciali angolari.",
+  "ceramica":"Fornitura e posa in opera di pavimento o rivestimento in ceramica (escluso materiale), compreso colla cementizia di allettamento, distanziatori, tagli, stuccatura dei giunti e pulizia finale con prodotti specifici.",
+  "marmo":"Fornitura e posa in opera di pavimento in lastre di marmo (escluso materiale), compreso allettamento su letto di malta di cemento bianco, colla specifica, tagli con troncatrice diamantata, stuccatura con stucco acrilico di colore abbinato, lucidatura con macchina e protezione con olio di lino.",
+  "granito":"Fornitura e posa in opera di pavimento in lastre di granito (escluso materiale), compreso allettamento con colla ad alte prestazioni, tagli con troncatrice diamantata, stuccatura dei giunti, trattamento idrorepellente e lucidatura finale.",
+  "pietra lavica":"Fornitura e posa in opera di pavimento in lastre di pietra lavica dell'Etna (escluso materiale), compreso allettamento con malta bastarda, giunti da 3-5 mm stuccati con boiacca di cemento bianco, trattamento protettivo con olio di lino e pulizia finale.",
+  "parquet":"Fornitura e posa in opera di parquet in listoni o listelli (escluso materiale), compreso massetto di livellamento, barriera al vapore, incollaggio con colla neoprene o viti di fissaggio, battiscopa di raccordo, levigatura finale e verniciatura con vernice poliuretanica a 2 mani.",
+  "laminato":"Fornitura e posa in opera di pavimento laminato galleggiante (escluso materiale), compreso strato isolante in sughero o polietilene sp. 3 mm, raccordi in alluminio alle porte, profili di chiusura e quant'altro per dare il pavimento finito.",
+  "pavimento vinilico LVT":"Fornitura e posa in opera di pavimento in LVT (Luxury Vinyl Tile, escluso materiale), compreso autolivellante di preparazione sp. 2 mm, incollaggio con colla acrilica a pressione, taglio a misura e raccordi perimetrali. Idoneo per ambienti umidi.",
+  "porfido":"Fornitura e posa in opera di cubetti di porfido (escluso materiale), compreso sottofondo in sabbia stabilizzata sp. 5 cm o letto di malta, posa a opera d'arte con vibratura e costipatura, stuccatura dei giunti con sabbia fine o resina e pulizia finale.",
+  "marmettoni cemento":"Fornitura e posa in opera di marmettoni in cemento decorativo (escluso materiale), compreso letto di malta di allettamento, distanziatori, raccordi e stuccatura dei giunti con boiacca di cemento bianco e pulizia con prodotti neutri.",
+  "pavimento esterno":"Fornitura e posa in opera di pavimentazione esterna (escluso materiale), compreso sottofondo in sabbia stabilizzata o massetto, colla adeguata all'esterno, giunti di dilatazione perimetrali e di frazionamento, stuccatura e pulizia finale.",
+  "ristilatura giunti":"Ristilatura dei giunti di pavimentazione esistente, compreso rimozione della stuccatura vecchia con fresa o smerigliatrice, pulizia dei giunti con aria compressa, applicazione di nuova stuccatura con boiacca epossidica o cementizia colorata e pulizia finale.",
+  "lucidatura marmo":"Levigatura e lucidatura di pavimento o rivestimento in marmo esistente, compreso passate con macchina levigatrice con dischi abrasivi dalla grana 36 alla 800, applicazione di cristallizzante o olio di lino, lucidatura finale con panno di lana.",
+  "battiscopa":"Fornitura e posa in opera di battiscopa (escluso materiale) in ceramica, marmo o legno, compreso colla di fissaggio, tagli angolari a 45°, stuccatura dei giunti e pulizia finale. Incluse pezze speciali agli angoli.",
+  "piastrelle":"Fornitura e posa in opera di piastrelle in ceramica (escluso materiale), compreso allettamento in malta cementizia o colla, tagli, stuccatura dei giunti e pulizia finale.",
+
+  // ── RIVESTIMENTI ─────────────────────────────────────────────────────────
+  "rivestimento bagno":"Fornitura e posa in opera di rivestimento in ceramica o gres per bagno (escluso materiale), posa dall'altezza di m 2.20 dal pavimento, compreso colla cementizia C2 o colla in pasta, tagli angolari, pezze speciali di bordo e angolo, stuccatura dei giunti con prodotto antimuffa e pulizia finale.",
+  "rivestimento cucina":"Fornitura e posa in opera di rivestimento in ceramica o gres per cucina (escluso materiale), posa nella zona retro-piano di lavoro h. 60-80 cm, compreso colla cementizia, tagli, pezze speciali, stuccatura dei giunti con sigillante alimentare e pulizia finale.",
+  "rivestimento marmo":"Fornitura e posa in opera di rivestimento in lastre di marmo (escluso materiale), compreso colla specifica per superfici verticali, tagli con troncatrice diamantata, sigillatura con stucco acrilico abbinato e pulizia finale.",
+  "rivestimento gres porcellanato":"Fornitura e posa in opera di rivestimento in gres porcellanato (escluso materiale), compreso colla ad alte prestazioni C2S1, tagli con troncatrice, giunti da 2 mm stuccati con prodotto colorato e pulizia finale con prodotti idonei al gres.",
+  "rivestimento":"Fornitura e posa in opera di rivestimento in ceramica o gres (escluso materiale), compreso colla cementizia di fissaggio, tagli angolari, pezze speciali, stuccatura dei giunti e pulizia finale.",
+
+  // ── CARTONGESSO ──────────────────────────────────────────────────────────
+  "controsoffitto cartongesso":"Fornitura e posa in opera di controsoffitto in lastre di cartongesso sp. 12.5 mm su struttura metallica in acciaio zincato composta da profili porta-lastra e profili perimetrali, pendini registrabili ogni 120 cm, compreso viti, nastro di carta ai giunti, stuccatura e rasatura.",
+  "controsoffitto fonoassorbente":"Fornitura e posa in opera di controsoffitto fonoassorbente in pannelli di lana minerale sp. 20 mm su struttura metallica a vista o nascosta, compreso pendini, profili perimetrali, pannelli tagliati a misura e quant'altro per dare l'opera finita con potere fonoisolante Rw≥40 dB.",
+  "controsoffitto":"Fornitura e posa in opera di controsoffitto in lastre di cartongesso su struttura metallica zincata, compreso pendini, profili, viti, stuccatura dei giunti con nastro di carta e rasatura finale.",
+  "parete cartongesso singola":"Fornitura e posa in opera di parete divisoria in cartongesso a singola lastra per lato sp. tot. 10 cm, composta da profili UW a pavimento e soffitto e CW verticali ogni 60 cm, lastre da 12.5 mm avvitate, compreso stuccatura con pasta e nastro di carta, rasatura. Inclusa lana di vetro interna sp. 45 mm.",
+  "parete cartongesso doppia":"Fornitura e posa in opera di parete divisoria in cartongesso a doppia lastra per lato sp. tot. 15 cm, composta da struttura metallica rinforzata, quattro lastre da 12.5 mm (due per lato), compreso stuccatura, rasatura e lana di vetro sp. 50 mm per isolamento acustico Rw≥52 dB.",
+  "cartongesso":"Fornitura e posa in opera di lastra di cartongesso sp. 12.5 mm su struttura metallica in acciaio zincato, compreso viti, stuccatura con nastro di carta ai giunti e rasatura finale.",
+  "cartongesso doppio":"Fornitura e posa in opera di doppia lastra di cartongesso sp. 12.5 mm per lato su struttura metallica rinforzata, compreso lana di vetro interna, stuccatura e rasatura per elevate prestazioni acustiche.",
+  "parete cartongesso con isolante":"Fornitura e posa in opera di parete in cartongesso con isolante acustico interno in lana di roccia ad alta densità, struttura metallica rinforzata, doppia lastra per lato, stuccatura e rasatura. Rw≥55 dB.",
+
+  // ── TINTEGGIATURE ────────────────────────────────────────────────────────
+  "pittura idropittura":"Tinteggiatura di pareti interne con idropittura lavabile traspirante, compreso preparazione della superficie con stuccatura delle imperfezioni e carteggiatura, applicazione di primer di fondo e due mani di finitura con rullo a pelo corto, verniciatura degli spigoli a pennello.",
+  "pittura lavabile":"Tinteggiatura di pareti interne con pittura lavabile di alta qualità (opacità classe 1), compreso pulizia e preparazione del supporto, stuccatura e carteggiatura, primer di fondo e due mani di finitura con rullo. Inclusa protezione di pavimenti e infissi con carta e nastro.",
+  "pittura soffitto":"Tinteggiatura di soffitti interni con idropittura bianca coprente, compreso preparazione con stuccatura e carteggiatura, primer di fondo e due mani di finitura con rullo a pelo lungo. Inclusa protezione di pavimenti, mobili e infissi.",
+  "pittura esterna silossanica":"Tinteggiatura di facciata esterna con pittura ai silossani idrorepellente e traspirante, compreso ponteggio se non diversamente computato, pulizia della superficie con spazzola metallica, stuccatura e sigillatura delle lesioni, primer di fondo e due mani di finitura.",
+  "pittura elastomerica":"Tinteggiatura di facciata esterna con pittura elastomerica a ponte-fessura (allungamento >100%), compreso ponteggio, pulizia e preparazione della superficie, primer di ancoraggio e due mani di finitura elastomerica sp. tot. ≥400 μm.",
+  "pittura ai silicati":"Tinteggiatura di facciata esterna con pittura minerale ai silicati di potassio (tipo Keim o similare), compreso ponteggio, pulizia, neutralizzazione con acqua, primer fissativo e due mani di finitura. Prodotto traspirante, antialga, pH elevato.",
+  "verniciatura ferro":"Verniciatura di elementi in ferro o acciaio (ringhiere, cancelli, inferriate), compreso rimozione della ruggine con spazzola metallica o levigatrice, applicazione di convertitore di ruggine, primer antiruggine epossidico e due mani di smalto poliuretanico.",
+  "pittura":"Tinteggiatura di superfici interne con idropittura lavabile, compreso pulizia e preparazione del supporto, stuccatura delle imperfezioni, primer di fondo e due mani di finitura con rullo.",
+  "pittura esterna":"Tinteggiatura di pareti esterne con pittura ai silossani o elastomerica, compreso pulizia, preparazione, primer e due mani di finitura. Incluso ponteggio se non diversamente computato.",
+  "carta da parati":"Fornitura e posa in opera di carta da parati (escluso materiale), compreso preparazione del supporto con colla di fondo, taglio e posa delle strisce con colla specifica, raccordi di motivo e pulizia finale.",
+
+  // ── SERRAMENTI ───────────────────────────────────────────────────────────
+  "finestra PVC doppio vetro":"Fornitura e posa in opera di finestra in PVC a 5 camere con vetrocamera 4/12/4 basso-emissivo (escluso materiale), compreso rimozione del vecchio infisso con smaltimento, montaggio del controtelaio, sigillatura perimetrale con schiuma poliuretanica e silicone neutro, regolazione e pulizia.",
+  "finestra alluminio taglio termico":"Fornitura e posa in opera di finestra in alluminio a taglio termico con vetrocamera 4/16/4 basso-emissivo (escluso materiale), compreso rimozione del vecchio serramento, controtelaio, sigillatura con schiuma e silicone, raccordi con intonaco e quant'altro.",
+  "finestra legno":"Fornitura e posa in opera di finestra in legno lamellare verniciato con vetrocamera (escluso materiale), compreso controtelaio, sigillatura perimetrale, raccordi con intonaco e quant'altro per dare l'opera finita.",
+  "porta interna":"Fornitura e posa in opera di porta interna in legno o laminato (escluso materiale), compreso telaio con stipiti e copristipiti, soglia, cerniere a scomparsa, maniglia con serratura, sigillatura perimetrale e quant'altro per dare l'opera finita.",
+  "porta blindata classe 3":"Fornitura e posa in opera di porta blindata RC3 (escluso materiale), compreso telaio in acciaio con ancoraggi murari, cerniere antisvellimento, serratura multipunto a doppia chiusura, guarnizioni acustiche, controtelaio e raccordi con intonaco.",
+  "portone ingresso":"Fornitura e posa in opera di portone di ingresso in alluminio o acciaio (escluso materiale), compreso controtelaio, ancoraggi murari, guarnizioni, serratura di sicurezza, raccordi e sigillatura perimetrale.",
+  "persiana alluminio":"Fornitura e posa in opera di persiana avvolgibile in alluminio (escluso materiale), compreso cassonetto, guida, manovella o motorizzazione, raccordi con intonaco e quant'altro.",
+  "tapparella avvolgibile":"Fornitura e posa in opera di tapparella in PVC o alluminio (escluso materiale), compreso cassonetto, guida, cinghia con rullo, raccordi e quant'altro per dare l'opera finita.",
+  "tapparella motorizzata":"Fornitura e posa in opera di tapparella motorizzata in alluminio (escluso materiale), compreso motore tubolare 220V, radiocomando con due teclasti, fine corsa regolabili, raccordi e quant'altro.",
+  "vetrocamera basso-emissivo":"Fornitura e posa in opera di vetrocamera basso-emissivo 4/12/4 (escluso vetro) in sostituzione del vetro singolo esistente, compreso rimozione del vecchio vetro, sigillatura con silicone strutturale e quant'altro.",
+  "cancello pedonale":"Fornitura e posa in opera di cancello pedonale in ferro verniciato (escluso materiale), compreso cardini, serratura, copristipiti e quant'altro per dare l'opera finita.",
+  "cancello carraio motorizzato":"Fornitura e posa in opera di cancello carraio scorrevole o a due ante (escluso materiale) con motorizzazione, compreso motore, radiocomandi, fine corsa, fotocellule di sicurezza, lampeggiante, colonna con citofono e quant'altro.",
+  "infissi":"Fornitura e posa in opera di infisso (escluso materiale), compreso rimozione del vecchio serramento con smaltimento, controtelaio, sigillatura perimetrale e quant'altro per dare l'opera finita.",
+  "finestra":"Fornitura e posa in opera di finestra (escluso materiale), compreso rimozione del vecchio serramento, controtelaio, sigillatura e quant'altro per dare l'opera finita.",
+  "porta":"Fornitura e posa in opera di porta interna (escluso materiale), compreso telaio, stipiti, cerniere, maniglia con serratura e quant'altro.",
+  "porta blindata":"Fornitura e posa in opera di porta blindata (escluso materiale), compreso telaio in acciaio, cerniere antisvellimento, serratura multipunto e quant'altro.",
+  "persiana":"Fornitura e posa in opera di persiana (escluso materiale), compreso cassonetto, guide e manovra e quant'altro per dare l'opera finita.",
+  "tapparella":"Fornitura e posa in opera di tapparella (escluso materiale), compreso cassonetto, guida, cinghia e manovella e quant'altro.",
+  "cancello":"Fornitura e posa in opera di cancello (escluso materiale), compreso cardini, serratura e quant'altro per dare l'opera finita.",
+
+  // ── IMPIANTI IDRAULICI ───────────────────────────────────────────────────
+  "impianto idraulico":"Rifacimento completo dell'impianto idrico-sanitario a norma UNI EN 806, compreso demolizione dell'impianto esistente e smaltimento, nuove tubazioni in rame o multistrato, valvole di intercettazione per ogni utenza, allacciamento agli apparecchi sanitari, collaudo a pressione di 10 bar e dichiarazione di conformità.",
+  "tubazione rame 3/4":"Fornitura e posa in opera di tubazione in rame ricotto rivestito Ø 22 mm (3/4\"), compreso raccorderia in ottone, saldatura capillare, staffaggi ogni 100 cm, isolamento con guaina elastomerica sp. 13 mm e quant'altro per dare il lavoro finito.",
+  "tubazione multistrato":"Fornitura e posa in opera di tubazione multistrato PE-Al-PE Ø 20 mm, compreso raccorderia a pressare in ottone, staffaggi, curva di compensazione termica ogni 3 m, isolamento e quant'altro per dare il lavoro finito.",
+  "scarico PVC 110":"Fornitura e posa in opera di tubazione di scarico in PVC-U grigio Ø 110 mm, compreso raccorderia (curve, T, riduzioni), sifone sifonato, pendenza minima 2%, fissaggio ogni 150 cm e collegamento al collettore principale.",
+  "impianto gas":"Rifacimento impianto gas a norma UNI 7129 e UNI 11528, compreso demolizione dell'impianto esistente, nuova tubazione in rame o acciaio, valvola di intercettazione alla radice, valvolette di sezionamento, collaudo a pressione e dichiarazione di conformità IMQ.",
+  "vaso wc sospeso":"Fornitura e posa in opera di vaso WC sospeso con cassetta a zaino incassata (escluso materiale), compreso staffa di ancoraggio a muro, telaio metallico, cassetta idraulica, sedile, allacciamento idrico e di scarico con sifone, sigillatura con silicone e collaudo.",
+  "lavabo":"Fornitura e posa in opera di lavabo da appoggio o da incasso (escluso materiale), compreso colonna o mensola di sostegno, allacciamento idrico caldo/freddo con rubinetti di arresto, scarico a sifone con piletta clic-clac e sigillatura perimetrale con silicone.",
+  "bidet":"Fornitura e posa in opera di bidet (escluso materiale), compreso allacciamento alle alimentazioni caldo/freddo con rubinetti di arresto, scarico a sifone con piletta, sigillatura con silicone e collaudo.",
+  "doccia":"Fornitura e posa in opera di box doccia con piatto (escluso materiale), compreso impermeabilizzazione del piano di posa con guaina liquida, allacciamento idrico al gruppo miscelatore, scarico con sifone sifonato, sigillatura perimetrale con silicone e collaudo.",
+  "vasca":"Fornitura e posa in opera di vasca da bagno in acrilico (escluso materiale), compreso allacciamento idrico caldo/freddo, gruppo miscelatore, scarico con sifone, pannello laterale di chiusura, sigillatura con silicone e collaudo.",
+  "rubinetteria bagno":"Fornitura e posa in opera di rubinetteria miscelatrice monocomando (escluso materiale) per lavabo, bidet e/o doccia, compreso raccorderia di collegamento, raccordi flessibili, controventatura e collaudo.",
+  "sanitari":"Fornitura e posa in opera di servizio igienico completo (escluso materiale) composto da vaso WC sospeso con cassetta a zaino, bidet e lavabo, compreso allacciamenti idrici e di scarico, sigillatura con silicone, rubinetti di arresto per ogni utenza e collaudo.",
+  "scarico":"Rifacimento scarichi di scarico in PVC Ø indicato, compreso rimozione dell'impianto esistente, nuova tubazione con raccorderia, sifone, pendenza minima 2%, fissaggi e collegamento al collettore.",
+  "rubinetteria":"Fornitura e posa in opera di rubinetteria (escluso materiale), compreso raccorderia di collegamento, raccordi flessibili e collaudo.",
+
+  // ── IMPIANTI ELETTRICI ───────────────────────────────────────────────────
+  "impianto elettrico":"Rifacimento completo dell'impianto elettrico civile a norma CEI 64-8, compreso demolizione dell'impianto esistente e smaltimento, posa di tubazioni corrugato Ø 16-25 mm, cablaggio con conduttori in rame sezione 1.5-4 mm², quadro elettrico con differenziali 30 mA e magnetotermici per ogni circuito, prese, interruttori e placche di finitura. Incluso certificato di conformità.",
+  "quadro elettrico":"Fornitura e posa in opera di quadro elettrico civile in resina IP40, compreso interruttore generale bipolare, n. 4 magnetotermici da 16A per circuiti luce/prese e n. 2 differenziali 30 mA di tipo A, morsettiera, etichettatura, collegamento a terra e dichiarazione di conformità.",
+  "punto luce":"Fornitura e posa in opera di punto luce completo, compreso interruttore o deviatore, cassetta di derivazione con morsetteria, cavo in rame 3×1.5 mm² sotto tubo corrugato, placca di finitura e quant'altro per dare il lavoro finito.",
+  "presa elettrica":"Fornitura e posa in opera di presa Schuko 2P+T 16A, compreso cassetta da incasso, cavo in rame 3×2.5 mm² sotto tubo corrugato, placca di finitura e messa a terra. Inclusa protezione con differenziale 30 mA nel quadro.",
+  "videocitofono":"Fornitura e posa in opera di impianto videocitofonico colore (escluso materiale), compreso pulsantiera esterna con telecamera e telecamere, monitor touch screen interno, cablaggio dedicato, alimentatore e quant'altro per dare il lavoro finito.",
+  "impianto allarme":"Fornitura e posa in opera di impianto antintrusione perimetrale, compreso centrale con tastiera, sensori volumetrici PIR, contatti magnetici su tutti i serramenti, sirena esterna autoprotetta, sirena interna, collegamento a centrale operativa H24 e collaudo.",
+  "fotovoltaico":"Fornitura e posa in opera di impianto fotovoltaico chiavi in mano, compreso moduli fotovoltaici monocristallini, struttura di montaggio, inverter di stringa, contatore bidirezionale, cablaggio DC/AC, pratiche burocratiche per accesso alla rete GSE e certificato di conformità. Inclusa garanzia prodotto 25 anni.",
+
+  // ── IMPIANTI TERMICI ─────────────────────────────────────────────────────
+  "impianto riscaldamento":"Fornitura e posa in opera di impianto di riscaldamento a pavimento radiante, compreso pannelli isolanti in EPS sp. 3 cm con struttura portante, tubi in polietilene reticolato Ø 16×2 mm a passo 15 cm, collettori di zona con valvole miscelatrici, massetto di copertura e collaudo a pressione.",
+  "impianto radiante":"Fornitura e posa in opera di sistema di riscaldamento/raffrescamento radiante a pavimento, compreso pannelli isolanti sagomati, tubi PE-Xa Ø 16 mm, collettori di distribuzione con regolazione individuale per zona, massetto di copertura sp. 5 cm e collaudo idraulico.",
+  "caldaia":"Fornitura e posa in opera di caldaia a condensazione murale (escluso materiale), compreso rimozione della vecchia caldaia con smaltimento, allacciamento gas con valvola di sicurezza, collegamenti idraulici caldo/freddo, scarico fumi coassiale in acciaio inox, vaso di espansione, valvola di sicurezza e dichiarazione di conformità.",
+  "climatizzatore":"Fornitura e posa in opera di sistema split inverter (escluso materiale), compreso unità esterna su staffa a parete, unità interna a parete o a cassetta, tubazione rame rivestita isolata, scarico condensa con pompa se necessario, cablaggio elettrico, carica gas R32 e collaudo.",
+  "radiatore":"Fornitura e posa in opera di radiatore in alluminio o acciaio (escluso materiale), compreso mensole di fissaggio a parete, valvola termostatica, detentore di regolazione, raccorderia in ottone e collaudo.",
+
+  // ── OPERE ESTERNE ────────────────────────────────────────────────────────
+  "pavimento esterno porfido":"Fornitura e posa in opera di cubetti di porfido (escluso materiale) su sottofondo in massetto cls sp. 8 cm, compreso sabbia di allettamento sp. 5 cm, posa a mano con livellatrice vibrante, stuccatura dei giunti con sabbia di quarzo o resina e pulizia finale.",
+  "recinzione muratura":"Esecuzione di recinzione perimetrale in muratura di mattoni forati, con plinti di fondazione in cls Rck≥20 N/mm², intonaco civile su entrambe le facce, sommità a doppio coppo o in piano inclinato, compreso quant'altro per dare il lavoro finito.",
+  "muro di cinta":"Esecuzione di muro di cinta in muratura di mattoni o blocchi, compreso fondazione in cls armato, intonaco o rivestimento, coronamento e quant'altro per dare l'opera finita e impermeabile.",
+  "ringhiera":"Fornitura e posa in opera di ringhiera in ferro verniciato con polveri epossidiche (escluso materiale), compreso tasselli di ancoraggio in acciaio inox ogni 100 cm, sigillatura con malta o resina epossidica e quant'altro.",
+  "scala":"Fornitura e posa in opera di scala interna o esterna in ferro, legno o cls rivestito (escluso materiale), compreso struttura portante, gradini antiscivolo, raccordi con le strutture esistenti e quant'altro.",
+
+  // ── MANODOPERA ───────────────────────────────────────────────────────────
+  "operaio comune":"Manodopera di operaio comune per lavori generici di cantiere: movimentazione materiali, pulizia aree di lavoro, assistenza alle lavorazioni specializzate, scarico e distribuzione materiali. Comprensivo di DPI, attrezzatura di base e oneri previdenziali e assicurativi.",
+  "operaio qualificato":"Manodopera di operaio qualificato per esecuzione di lavorazioni edili di media specializzazione, compreso attrezzatura specifica, DPI e oneri di legge.",
+  "operaio specializzato":"Manodopera di operaio specializzato per esecuzione di lavorazioni edili specialistiche (installazione impianti, finiture pregiate, consolidamenti), compreso attrezzatura, DPI e oneri di legge.",
+  "caposquadra":"Manodopera di caposquadra per direzione e coordinamento delle lavorazioni in cantiere, controllo qualità delle opere eseguite, gestione dei rapporti con fornitori e subappaltatori, compreso attrezzatura, DPI e oneri di legge.",
+  "manodopera":"Manodopera generica in cantiere per operazioni di supporto, movimentazione materiali e assistenza alle lavorazioni principali. Comprensivo di DPI, attrezzatura di base e oneri previdenziali.",
+  "muratore":"Manodopera di muratore qualificato per esecuzione di opere murarie, intonaci, massetti e finiture civili, compreso attrezzatura di cantiere, DPI e oneri di legge.",
+  "piastrellista":"Manodopera di piastrellista qualificato per posa di pavimenti e rivestimenti in ceramica, gres, marmo e materiali lapidei, compreso attrezzatura (troncatrice, miscelatore), DPI e oneri di legge.",
+  "elettricista":"Manodopera di elettricista abilitato per installazione, manutenzione e collaudo di impianti elettrici civili e industriali, compreso attrezzatura specifica, DPI, oneri assicurativi e previdenziali.",
+  "idraulico":"Manodopera di idraulico abilitato per installazione, manutenzione e collaudo di impianti idrici, termici e sanitari, compreso attrezzatura specifica, DPI e oneri di legge.",
+  "imbianchino":"Manodopera di imbianchino/tinteggiatore per tinteggiature, stuccature e finiture pittoriche, compreso attrezzatura (scale, rulli, pennelli), DPI e oneri di legge.",
+  "carpentiere":"Manodopera di carpentiere in ferro o legno per realizzazione di strutture metalliche, casseforme e opere in legno, compreso attrezzatura, saldatrice e DPI.",
+  "saldatore":"Manodopera di saldatore qualificato per giunzioni di strutture metalliche (MIG, TIG, elettrica), compreso attrezzatura, DPI e certificati di qualifica.",
+  "geometra":"Prestazione professionale di geometra abilitato per direzione lavori, redazione di computi metrici, contabilità dei lavori, rilievi architettonici, pratiche SCIA/CILA, collaudi statici e quant'altro necessario alla regolare esecuzione dell'intervento.",
+
+  // ── PONTEGGI E NOLEGGI ───────────────────────────────────────────────────
+  "ponteggio":"Fornitura, montaggio, uso mensile e smontaggio di ponteggio metallico prefabbricato a tubi e giunti o a telai prefabbricati, su tutta la fronte dell'edificio, compreso piano di posa, teli di protezione in polipropilene, ancoraggi alla muratura ogni 18 m², segnaletica di sicurezza e PIMUS.",
+  "ponteggio mensile":"Nolo mensile di ponteggio metallico prefabbricato già montato, compreso manutenzione ordinaria, sorveglianza e quant'altro necessario per il mantenimento delle condizioni di sicurezza previste dal PIMUS.",
+  "piattaforma aerea":"Noleggio di piattaforma aerea a batteria elettrica con cestello per altezze fino a m 12, compreso operatore e spostamenti nell'area di cantiere. Adatta per lavori in ambienti chiusi grazie all'assenza di emissioni.",
+  "noleggio autocarro":"Noleggio di autocarro cassonato con gru portata 5000 kg per movimentazione materiali in cantiere, compreso autista, manovre e spostamenti. Costo per ora di utilizzo effettivo.",
+  "noleggio gru":"Noleggio di autogrù telescopica con operatore per sollevamento e movimentazione di carichi pesanti in cantiere. Costo per giornata lavorativa di 8 ore, inclusi spostamenti entro 30 km.",
+  "noleggio escavatore":"Noleggio di escavatore idraulico cingolato o gommato con operatore per lavori di scavo, demolizione o movimentazione terra. Costo per ora di utilizzo effettivo.",
+  "noleggio betoniera":"Noleggio di betoniera a bicchiere da 300 lt per preparazione di malta e calcestruzzo in cantiere, compreso trasporto e montaggio. Costo per giornata lavorativa.",
+};
+
+function generaDescrizione(voceId){
+  const v=computoVoci.find(x=>x.id===voceId);if(!v||!v.lavorazione)return;
+  const ta=document.getElementById('ai-ta-'+voceId);
+  if(!ta)return;
+  const desc=DESC_TECNICHE[v.lavorazione]||'';
+  if(desc){
+    ta.value=desc;
+    v.descEstesa=desc;
+    // Aggiorna pulsante
+    const btn=document.getElementById('ai-btn-'+voceId);
+    if(btn)btn.textContent='🔄 Rigenera';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// PAGES — ADMIN
+// ════════════════════════════════════════════════════════════
+function pgDash(){
+  const cant=DB.list('cantieri'),logs=DB.list('logs'),comp=DB.list('computi');
+  const attivi=cant.filter(c=>c.stato==='attivo').length;
+  const tC=logs.reduce((s,l)=>s+(l.costo||0),0);
+  const cM=logs.filter(l=>(Date.now()-new Date(l.iso))<30*864e5).reduce((s,l)=>s+(l.costo||0),0);
+  const rows=logs.slice(-6).reverse().map(l=>`<tr><td>${l.data}</td><td><b>${l.cantNome}</b></td><td>${l.dipNome}</td><td style="font-size:.78rem">${(l.riepilogo||'').substring(0,50)}…</td><td><span class="badge bgg">€ ${fmt(l.costo)}</span></td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">Nessun report ancora</td></tr>';
+  return`<div class="ph"><h2>Dashboard</h2><p>Benvenuto, ${CU.name} — ${today()}</p></div>
+  <div class="sg">
+    <div class="sc"><div class="sl">Cantieri attivi</div><div class="sv gold">${attivi}</div></div>
+    <div class="sc"><div class="sl">Costi mese</div><div class="sv grn">€ ${fmt(cM)}</div></div>
+    <div class="sc"><div class="sl">Costi totali</div><div class="sv">€ ${fmt(tC)}</div></div>
+    <div class="sc"><div class="sl">Computi PDF</div><div class="sv">${comp.length}</div></div>
+  </div>
+  <div class="card"><div class="card-title">Ultimi report dipendenti</div>
+  <div class="tw"><table><thead><tr><th>Data</th><th>Cantiere</th><th>Dipendente</th><th>Lavorazione</th><th>Costo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function pgCant(){
+  const list=DB.list('cantieri');
+  const cards=list.map(c=>`<div class="cc">
+    <div>
+      <div class="cc-name">${c.nome}</div>
+      <div class="cc-meta">📍 ${c.ind||'—'} | Cliente: ${c.cl||'—'}</div>
+      <div style="margin-top:5px"><span class="badge ${c.stato==='attivo'?'bgv':c.stato==='completato'?'bggr':'bgr'}">${c.stato.toUpperCase()}</span></div>
+    </div>
+    <div style="display:flex;gap:5px;flex-shrink:0">
+      <button class="btn bo bsm" onclick="editCant('${c.id}')">✏️</button>
+      <button class="btn br bsm" onclick="delCant('${c.id}')">🗑️</button>
+    </div>
+  </div>`).join('')||'<p style="color:var(--muted);text-align:center;padding:2rem">Nessun cantiere. Aggiungine uno!</p>';
+  return`<div class="ph"><h2>Cantieri</h2></div>
+  <button class="btn bg" onclick="openCant(null)" style="margin-bottom:1rem">+ Nuovo Cantiere</button>${cards}`;
+}
+function openCant(id){
+  const c=id?DB.list('cantieri').find(x=>x.id===id):null;
+  openM(`<div class="mtit">${c?'Modifica':'Nuovo'} Cantiere</div>
+  <div class="fgrid">
+    <div class="fg full"><label>Nome cantiere *</label><input id="mc-n" value="${c?.nome||''}" placeholder="Villa Rossi — Ristrutturazione"/></div>
+    <div class="fg full"><label>Indirizzo</label><input id="mc-i" value="${c?.ind||''}" placeholder="Via Roma 1, Catania"/></div>
+    <div class="fg"><label>Cliente</label><input id="mc-c" value="${c?.cl||''}" placeholder="Mario Rossi"/></div>
+    <div class="fg"><label>Telefono</label><input id="mc-t" value="${c?.tel||''}" placeholder="+39 333 000000"/></div>
+    <div class="fg"><label>Data inizio</label><input type="date" id="mc-d" value="${c?.dataISO||new Date().toISOString().slice(0,10)}"/></div>
+    <div class="fg"><label>Stato</label><select id="mc-s">
+      <option value="attivo"${c?.stato==='attivo'?' selected':''}>Attivo</option>
+      <option value="in pausa"${c?.stato==='in pausa'?' selected':''}>In Pausa</option>
+      <option value="completato"${c?.stato==='completato'?' selected':''}>Completato</option>
+    </select></div>
+    <div class="fg full"><label>Note</label><textarea id="mc-no">${c?.note||''}</textarea></div>
+  </div>
+  <div class="mfoot"><button class="btn bo" onclick="closeM()">Annulla</button><button class="btn bg" onclick="saveCant(${c?`'${c.id}'`:'null'})">${c?'Salva':'Aggiungi'}</button></div>`);
+}
+function saveCant(id){
+  const nome=document.getElementById('mc-n').value.trim();
+  if(!nome){alert('Il nome è obbligatorio');return}
+  const d=document.getElementById('mc-d').value;
+  const obj={nome,ind:document.getElementById('mc-i').value,cl:document.getElementById('mc-c').value,tel:document.getElementById('mc-t').value,dataISO:d,data:d?new Date(d).toLocaleDateString('it-IT'):'',stato:document.getElementById('mc-s').value,note:document.getElementById('mc-no').value};
+  if(id)DB.upd('cantieri',id,obj);else DB.push('cantieri',{id:uid(),...obj});
+  closeM();go('cant');
+}
+function editCant(id){openCant(id)}
+function delCant(id){if(!confirm('Eliminare questo cantiere?'))return;DB.rm('cantieri',id);go('cant')}
+
+function pgDip(){
+  const dips=DB.list('users').filter(u=>u.role==='employee');
+  const rows=dips.map(u=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:.65rem">${u.avatar}</div><b>${u.name}</b></div></td>
+    <td><code style="font-size:.82rem">${u.username}</code></td>
+    <td>${u.password}</td>
+    <td><button class="btn br bsm" onclick="delDip('${u.id}')">🗑️</button></td>
+  </tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">Nessun dipendente</td></tr>';
+  return`<div class="ph"><h2>Dipendenti</h2></div>
+  <button class="btn bg" onclick="openDip()" style="margin-bottom:1rem">+ Aggiungi Dipendente</button>
+  <div class="card"><div class="tw"><table><thead><tr><th>Nome</th><th>Username</th><th>Password</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
+  <div class="alert ainfo">🔒 Credenziali visibili solo al titolare. I dipendenti le usano per il login.</div>`;
+}
+function openDip(){
+  openM(`<div class="mtit">Nuovo Dipendente</div>
+  <div class="fg"><label>Nome e Cognome *</label><input id="dd-n" placeholder="Mario Bianchi"/></div>
+  <div class="fg"><label>Username *</label><input id="dd-u" placeholder="mario.bianchi"/></div>
+  <div class="fg"><label>Password *</label><input id="dd-p" placeholder="Minimo 6 caratteri"/></div>
+  <div class="mfoot"><button class="btn bo" onclick="closeM()">Annulla</button><button class="btn bg" onclick="saveDip()">Aggiungi</button></div>`);
+}
+function saveDip(){
+  const nome=document.getElementById('dd-n').value.trim();
+  const u=document.getElementById('dd-u').value.trim().toLowerCase();
+  const p=document.getElementById('dd-p').value.trim();
+  if(!nome||!u||!p){alert('Compila tutti i campi');return}
+  if(p.length<6){alert('Password minimo 6 caratteri');return}
+  if(DB.list('users').find(x=>x.username===u)){alert('Username già in uso');return}
+  const av=nome.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+  DB.push('users',{id:uid(),username:u,password:p,name:nome,role:'employee',avatar:av});
+  closeM();go('dip');
+}
+function delDip(id){if(!confirm('Rimuovere?'))return;DB.rm('users',id);go('dip')}
+
+// ════════════════════════════════════════════════════════════
+// COMPUTI METRICI — form voce per voce, nessuna API
+// ════════════════════════════════════════════════════════════
+let computoVoci=[];
+
+function pgComp(){
+  const list=DB.list('computi').slice().reverse();
+  const cant=DB.list('cantieri');
+  const rows=list.map(co=>`<tr>
+    <td>${co.data}</td><td><b>${co.titolo}</b></td><td>${co.cantNome||'—'}</td>
+    <td style="text-align:right">€ ${fmt(co.totale)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn bo bsm" onclick="viewComp('${co.id}')">👁</button>
+      <button class="btn bg bsm" onclick="dlComp('${co.id}')">⬇ PDF</button>
+      <button class="btn br bsm" onclick="delComp('${co.id}')">🗑️</button>
+    </td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">Nessun computo</td></tr>';
+  const hasBozza=!!(DB.get('comp_bozza')?.voci?.some(v=>v.lavorazione));
+  return`<div class="ph" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem">
+    <div><h2>Computi Metrici</h2><p>Crea preventivi PDF professionali con descrizione completa dei lavori${hasBozza?' &nbsp;<span style="color:var(--gold);font-weight:600;font-size:.82rem">● Bozza salvata</span>':''}</p></div>
+    ${hasBozza?`<button class="btn br bsm" onclick="if(confirm('Eliminare la bozza in corso e iniziare da zero?'))cancelBozza()" style="align-self:center;white-space:nowrap">🗑️ Nuova bozza</button>`:''}
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Informazioni generali</div>
+    <div class="fgrid">
+      <div class="fg"><label>Titolo *</label><input id="cp-t" placeholder="Ristrutturazione bagni piano primo" oninput="autosaveBozza()"/></div>
+      <div class="fg"><label>Cantiere</label><select id="cp-c"><option value="">— Nessuno —</option>${cant.map(co=>`<option value="${co.id}" data-n="${co.nome}">${co.nome}</option>`).join('')}</select></div>
+      <div class="fg"><label>Cliente</label><input id="cp-cl" placeholder="Mario Rossi"/></div>
+      <div class="fg"><label>Azienda</label><input id="cp-az" value="${DB.get('azienda')||''}" placeholder="La tua ditta"/></div>
+      <div class="fg"><label>Data</label><input type="date" id="cp-dt" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="fg"><label>IVA applicata</label><select id="cp-iva" onchange="aggTotale()">
+        <option value="22">22% — Standard</option>
+        <option value="10">10% — Ristrutturazione</option>
+        <option value="4">4% — Prima casa</option>
+        <option value="0">Esente IVA</option>
+      </select></div>
+      <div class="fg full" style="background:linear-gradient(135deg,#FDF3D7 0%,#F5EBC0 100%);border-radius:9px;padding:.85rem 1rem;border-left:4px solid var(--gold)">
+        <label style="color:var(--gd);font-weight:700">💰 Prezziario di riferimento dell'intero computo</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:.4rem">
+          <button onclick="cambiaPrezziarioGlobale('DEI')" class="prezz-btn ${prezziarioGlobale==='DEI'?'active':''}" id="pg-DEI"
+            style="padding:11px 8px;border:2px solid ${prezziarioGlobale==='DEI'?'var(--gold)':'#ddd'};background:${prezziarioGlobale==='DEI'?'var(--gold)':'#fff'};color:${prezziarioGlobale==='DEI'?'#fff':'#444'};border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer">
+            📘 DEI 2024
+          </button>
+          <button onclick="cambiaPrezziarioGlobale('SIC')" class="prezz-btn ${prezziarioGlobale==='SIC'?'active':''}" id="pg-SIC"
+            style="padding:11px 8px;border:2px solid ${prezziarioGlobale==='SIC'?'var(--gold)':'#ddd'};background:${prezziarioGlobale==='SIC'?'var(--gold)':'#fff'};color:${prezziarioGlobale==='SIC'?'#fff':'#444'};border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer">
+            🏛️ Sicilia 2024
+          </button>
+          <button onclick="cambiaPrezziarioGlobale('MAN')" class="prezz-btn ${prezziarioGlobale==='MAN'?'active':''}" id="pg-MAN"
+            style="padding:11px 8px;border:2px solid ${prezziarioGlobale==='MAN'?'var(--gold)':'#ddd'};background:${prezziarioGlobale==='MAN'?'var(--gold)':'#fff'};color:${prezziarioGlobale==='MAN'?'#fff':'#444'};border-radius:8px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer">
+            ✏️ Manuale
+          </button>
+        </div>
+        <div style="font-size:.76rem;color:var(--gd);margin-top:.5rem;opacity:.85">
+          Cambia il prezziario applicato a tutte le voci. <b>Manuale</b> non modifica i prezzi (mantieni quelli inseriti). Per cambiare il prezziario di una singola voce, usa il pulsante dentro la voce stessa.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔨 Voci di lavorazione</div>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:1rem">Per ogni voce: seleziona la lavorazione, inserisci la descrizione estesa e le dimensioni. La quantità si calcola automaticamente da N×L×H oppure puoi inserirla direttamente.</p>
+    <div id="VOCI_CONTAINER"></div>
+    <button class="btn bo" onclick="addVoce()" style="margin-top:.75rem;width:100%">+ Aggiungi voce</button>
+  </div>
+  <div class="card" style="background:var(--gl);border-color:var(--gold)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-size:.75rem;color:var(--gd);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Totale computo</div>
+        <div style="font-size:2rem;font-weight:700;color:var(--gd)" id="CP_TOT">€ 0,00</div>
+        <div style="font-size:.79rem;color:var(--gd);opacity:.75;margin-top:2px" id="CP_DET">Subtotale: € 0,00 — IVA: € 0,00</div>
+      </div>
+      <button class="btn bg" style="padding:13px 22px;font-size:.93rem" onclick="salvaComputo()">💾 Salva e genera PDF</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">📂 Computi salvati</div>
+  <div class="tw"><table><thead><tr><th>Data</th><th>Titolo</th><th>Cantiere</th><th style="text-align:right">Totale</th><th>Azioni</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function initComputoVoci(){computoVoci=[];addVoce();addVoce();}
+
+function addVoce(){
+  const id='v'+uid();
+  computoVoci.push({id,lavorazione:'',descEstesa:'',righe:[newRiga()],um:'',pu:0,puOriginale:0,tot:0,prezziarioVoce:prezziarioGlobale});
+  renderVoci();
+}
+
+function newRiga(desc=''){
+  return {rid:uid(),desc,n:1,lung:0,larg:0,hh:0};
+}
+
+function calcRiga(r){
+  const n=r.n||1,l=r.lung||0,w=r.larg||0,h=r.hh||0;
+  if(l>0&&w>0&&h>0) return Math.round(n*l*w*h*1000)/1000;
+  if(l>0&&w>0) return Math.round(n*l*w*100)/100;
+  if(l>0) return Math.round(n*l*100)/100;
+  return 0;
+}
+
+function calcQtaTotale(v){
+  if(v.qtaManuale) return v.qta||0;
+  const tot=v.righe.reduce((s,r)=>s+calcRiga(r),0);
+  return Math.round(tot*1000)/1000;
+}
+
+function renderVoci(){
+  const container=document.getElementById('VOCI_CONTAINER');if(!container)return;
+  container.innerHTML=computoVoci.map((v,idx)=>{
+    // Genera menu lavorazioni per il prezziario di questa voce
+    const prezzVoce=v.prezziarioVoce||prezziarioGlobale;
+    const listVoce=getPrezziario(prezzVoce);
+    const cats={};
+    for(const[k,vv] of Object.entries(listVoce)){if(!cats[vv.cat])cats[vv.cat]=[];cats[vv.cat].push(k)}
+    const opts='<option value="">— Seleziona lavorazione —</option>'+
+      Object.entries(cats).map(([cat,items])=>
+        `<optgroup label="── ${cat} ──">${items.map(k=>`<option value="${k}">${k.charAt(0).toUpperCase()+k.slice(1)} (€${listVoce[k].p}/${listVoce[k].um})</option>`).join('')}</optgroup>`
+      ).join('');
+    const qtaTot=calcQtaTotale(v);
+    const totEuro=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+    v.tot=totEuro;
+
+    // Righe misure
+    const righeHtml=v.righe.map((r,ri)=>{
+      const qRiga=calcRiga(r);
+      return `<div style="display:grid;grid-template-columns:2fr 40px 1fr 1fr 1fr 60px 28px;gap:.35rem;align-items:center;margin-bottom:.3rem;padding:.4rem .5rem;background:${ri%2?'#fff':'#F8F7F4'};border-radius:6px" id="riga_${r.rid}">
+        <input value="${r.desc||''}" onchange="setRigaField('${v.id}','${r.rid}','desc',this.value)"
+          placeholder="Es: Camera da letto, Bagno piano terra, Corridoio…"
+          style="padding:6px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;background:#fff"/>
+        <input type="number" min="1" step="1" value="${r.n||1}" onchange="setRigaField('${v.id}','${r.rid}','n',this.value)"
+          title="N° pezzi"
+          style="padding:6px 4px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+        <input type="number" min="0" step="0.01" value="${r.lung||''}" placeholder="Lung." onchange="setRigaField('${v.id}','${r.rid}','lung',this.value)"
+          style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+        <input type="number" min="0" step="0.01" value="${r.larg||''}" placeholder="Larg." onchange="setRigaField('${v.id}','${r.rid}','larg',this.value)"
+          style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+        <input type="number" min="0" step="0.01" value="${r.hh||''}" placeholder="Alt." onchange="setRigaField('${v.id}','${r.rid}','hh',this.value)"
+          style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+        <div style="text-align:right;font-size:.8rem;font-weight:600;color:${qRiga>0?'var(--gd)':'var(--muted)'};padding:0 4px">${qRiga>0?qRiga+' '+v.um:'—'}</div>
+        <button onclick="rmRiga('${v.id}','${r.rid}')" title="Rimuovi riga"
+          style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.95rem;padding:3px"
+          onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='#ccc'">✕</button>
+      </div>`;
+    }).join('');
+
+    return`<div style="background:#FAFAF8;border:1.5px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem" id="vr_${v.id}">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:.4rem">
+        <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Voce ${idx+1}</div>
+        <div style="display:flex;gap:.3rem;align-items:center">
+          <div style="display:flex;border:1.5px solid var(--border);border-radius:6px;overflow:hidden;font-size:.7rem">
+            <button onclick="cambiaPrezziarioVoce('${v.id}','DEI')"
+              style="padding:4px 9px;border:none;cursor:pointer;font-family:inherit;font-weight:600;background:${prezzVoce==='DEI'?'var(--gold)':'#fff'};color:${prezzVoce==='DEI'?'#fff':'#888'}">DEI</button>
+            <button onclick="cambiaPrezziarioVoce('${v.id}','SIC')"
+              style="padding:4px 9px;border:none;border-left:1px solid var(--border);cursor:pointer;font-family:inherit;font-weight:600;background:${prezzVoce==='SIC'?'var(--gold)':'#fff'};color:${prezzVoce==='SIC'?'#fff':'#888'}">SIC</button>
+            <button onclick="cambiaPrezziarioVoce('${v.id}','MAN')"
+              style="padding:4px 9px;border:none;border-left:1px solid var(--border);cursor:pointer;font-family:inherit;font-weight:600;background:${prezzVoce==='MAN'?'var(--gold)':'#fff'};color:${prezzVoce==='MAN'?'#fff':'#888'}">MAN</button>
+          </div>
+          <button onclick="rmVoce('${v.id}')" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:1.1rem;padding:2px 8px"
+            onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='#ccc'">✕</button>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:.65rem">
+        <label>Lavorazione (listino DEI 2024)</label>
+        <select onchange="setLav('${v.id}',this.value)"
+          style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.85rem;outline:none;background:#fff">
+          ${opts.replace(`value="${v.lavorazione}"`,`value="${v.lavorazione}" selected`)}
+        </select>
+      </div>
+
+      <div class="fg" style="margin-bottom:.75rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <label style="margin:0">Descrizione tecnica dei lavori</label>
+          <button id="ai-btn-${v.id}" onclick="generaDescrizione('${v.id}')"
+            style="background:var(--gold);border:none;border-radius:6px;color:#fff;font-size:.74rem;font-weight:600;padding:5px 11px;cursor:pointer;font-family:inherit;opacity:${v.lavorazione?'1':'0.4'};pointer-events:${v.lavorazione?'auto':'none'}">
+            📋 Genera descrizione
+          </button>
+        </div>
+        <textarea id="ai-ta-${v.id}" onchange="setDesc('${v.id}',this.value)"
+          placeholder="${v.lavorazione?'Premi «Genera descrizione» oppure scrivi manualmente…':'Seleziona prima una lavorazione'}"
+          rows="3" style="width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.83rem;outline:none;background:#fff;resize:vertical">${v.descEstesa||''}</textarea>
+      </div>
+
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.75rem;margin-bottom:.65rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">
+            📐 Misure per ambiente / zona
+          </div>
+          <button onclick="addRiga('${v.id}')"
+            style="background:none;border:1.5px solid var(--gold);color:var(--gd);border-radius:6px;padding:4px 12px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit">
+            + Aggiungi riga
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 40px 1fr 1fr 1fr 60px 28px;gap:.35rem;margin-bottom:.35rem;padding:0 .5rem">
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase">Descrizione ambiente</div>
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;text-align:center">N°</div>
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;text-align:center">Lung. (m)</div>
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;text-align:center">Larg. (m)</div>
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;text-align:center">Alt. (m)</div>
+          <div style="font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;text-align:right">Quantità</div>
+          <div></div>
+        </div>
+        <div id="righe_${v.id}">${righeHtml}</div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">
+          <span style="font-size:.75rem;color:var(--muted);margin-right:.5rem">Totale ${v.um||''}:</span>
+          <span style="font-size:1.05rem;font-weight:700;color:var(--gd)" id="qt_${v.id}">${qtaTot>0?qtaTot:0} ${v.um||''}</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.75rem 1rem;margin-bottom:.65rem">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem">⚙️ Unità di misura e prezzo unitario</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+          <div>
+            <div style="font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px">Unità di misura</div>
+            <select onchange="setUM('${v.id}',this.value)"
+              style="width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.9rem;outline:none;background:#fff">
+              ${['m²','m³','m','cad','h','gg','kg','t','kWp','a corpo'].map(u=>`<option value="${u}" ${v.um===u?'selected':''}>${u}${u==='m²'?' — Metro quadro':u==='m³'?' — Metro cubo':u==='m'?' — Metro lineare':u==='cad'?' — Cadauno/pezzo':u==='h'?' — Ora':u==='gg'?' — Giornata':u==='kg'?' — Chilogrammo':u==='t'?' — Tonnellata':u==='kWp'?' — Kilowatt picco':' — A corpo'}</option>`).join('')}
+            </select>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:3px">Modifica se diverso dal listino</div>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px">Prezzo unitario (€)</div>
+            <input type="number" min="0" step="0.01" value="${v.pu||''}"
+              onchange="setPU('${v.id}',this.value)"
+              style="width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.9rem;outline:none;background:#fff;text-align:right"/>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:3px">Listino: € ${fmt(v.puOriginale||v.pu||0)} — modificabile</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--gl);border:1.5px solid var(--gold);border-radius:8px;padding:.75rem 1rem">
+        <div>
+          <div style="font-size:.7rem;color:var(--gd);font-weight:600;text-transform:uppercase;margin-bottom:2px">Riepilogo voce ${idx+1}</div>
+          <div style="font-size:.85rem;color:var(--gd)">${qtaTot} ${v.um||'—'} × € ${fmt(v.pu||0)} = <b style="font-size:1.05rem">€ ${fmt(totEuro)}</b></div>
+        </div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--gd)" id="vt_${v.id}">€ ${fmt(totEuro)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  aggTotale();
+}
+
+function setRigaField(vid,rid,campo,val){
+  const v=computoVoci.find(x=>x.id===vid);if(!v)return;
+  const r=v.righe.find(x=>x.rid===rid);if(!r)return;
+  r[campo]=campo==='desc'?val:(parseFloat(val)||0);
+  v.qtaManuale=false;
+  const qtaTot=calcQtaTotale(v);
+  const totEuro=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+  v.tot=totEuro;
+  // Aggiorna solo i display senza re-render completo
+  const qRiga=calcRiga(r);
+  const rigaEl=document.getElementById('riga_'+rid);
+  if(rigaEl){
+    const qtaEl=rigaEl.querySelector('div[style*="text-align:right"]');
+    if(qtaEl)qtaEl.textContent=qRiga>0?qRiga+' '+v.um:'—';
+  }
+  const qtEl=document.getElementById('qt_'+vid);
+  if(qtEl)qtEl.textContent=qtaTot+' '+(v.um||'');
+  const vtEl=document.getElementById('vt_'+vid);
+  if(vtEl)vtEl.textContent='€ '+fmt(totEuro);
+  // Aggiorna riepilogo voce
+  const vrEl=document.getElementById('vr_'+vid);
+  if(vrEl){
+    const riepilogoB=vrEl.querySelector('b');
+    if(riepilogoB)riepilogoB.textContent='€ '+fmt(totEuro);
+  }
+  aggTotale();
+}
+
+function addRiga(vid){
+  const v=computoVoci.find(x=>x.id===vid);if(!v)return;
+  const r=newRiga();
+  v.righe.push(r);
+  // Aggiunge solo la nuova riga senza re-render completo
+  const container=document.getElementById('righe_'+vid);
+  if(container){
+    const ri=v.righe.length-1;
+    const div=document.createElement('div');
+    div.id='riga_'+r.rid;
+    div.style.cssText=`display:grid;grid-template-columns:2fr 40px 1fr 1fr 1fr 60px 28px;gap:.35rem;align-items:center;margin-bottom:.3rem;padding:.4rem .5rem;background:${ri%2?'#fff':'#F8F7F4'};border-radius:6px`;
+    div.innerHTML=`
+      <input value="" onchange="setRigaField('${vid}','${r.rid}','desc',this.value)"
+        placeholder="Es: Camera da letto, Bagno piano terra, Corridoio…"
+        style="padding:6px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;background:#fff"/>
+      <input type="number" min="1" step="1" value="1" onchange="setRigaField('${vid}','${r.rid}','n',this.value)"
+        title="N° pezzi" style="padding:6px 4px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+      <input type="number" min="0" step="0.01" placeholder="Lung." onchange="setRigaField('${vid}','${r.rid}','lung',this.value)"
+        style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+      <input type="number" min="0" step="0.01" placeholder="Larg." onchange="setRigaField('${vid}','${r.rid}','larg',this.value)"
+        style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+      <input type="number" min="0" step="0.01" placeholder="Alt." onchange="setRigaField('${vid}','${r.rid}','hh',this.value)"
+        style="padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.81rem;outline:none;text-align:center;background:#fff"/>
+      <div style="text-align:right;font-size:.8rem;font-weight:600;color:var(--muted);padding:0 4px">—</div>
+      <button onclick="rmRiga('${vid}','${r.rid}')" title="Rimuovi"
+        style="background:none;border:none;cursor:pointer;color:#ccc;font-size:.95rem;padding:3px"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='#ccc'">✕</button>`;
+    container.appendChild(div);
+    div.querySelector('input').focus();
+  }
+}
+
+function rmRiga(vid,rid){
+  const v=computoVoci.find(x=>x.id===vid);if(!v)return;
+  if(v.righe.length<=1){alert('Ogni voce deve avere almeno una riga di misura.');return}
+  v.righe=v.righe.filter(r=>r.rid!==rid);
+  const el=document.getElementById('riga_'+rid);if(el)el.remove();
+  const qtaTot=calcQtaTotale(v);
+  const totEuro=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+  v.tot=totEuro;
+  const qtEl=document.getElementById('qt_'+vid);if(qtEl)qtEl.textContent=qtaTot+' '+(v.um||'');
+  const vtEl=document.getElementById('vt_'+vid);if(vtEl)vtEl.textContent='€ '+fmt(totEuro);
+  aggTotale();
+}
+
+function setLav(id,val){
+  const v=computoVoci.find(x=>x.id===id);if(!v)return;
+  // Usa il prezziario impostato per questa voce (o globale se non set)
+  const prezz=getPrezziario(v.prezziarioVoce||prezziarioGlobale);
+  const dati=prezz[val]||{um:'',p:0};
+  v.lavorazione=val;
+  v.um=dati.um;
+  v.pu=dati.p;
+  v.puOriginale=dati.p;
+  const qtaTot=calcQtaTotale(v);
+  v.tot=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+  renderVoci();
+  if(val)setTimeout(()=>generaDescrizione(id),100);
+}
+
+function cambiaPrezziarioVoce(id,nuovoPrezz){
+  const v=computoVoci.find(x=>x.id===id);if(!v)return;
+  v.prezziarioVoce=nuovoPrezz;
+  // Aggiorna prezzo se la voce ha già una lavorazione selezionata
+  if(v.lavorazione && nuovoPrezz!=='MAN'){
+    const prezz=getPrezziario(nuovoPrezz);
+    const dati=prezz[v.lavorazione];
+    if(dati){
+      v.pu=dati.p;
+      v.puOriginale=dati.p;
+      v.um=dati.um;
+      const qtaTot=calcQtaTotale(v);
+      v.tot=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+    }
+  }
+  renderVoci();
+}
+
+function cambiaPrezziarioGlobale(nuovo){
+  if(nuovo==='MAN'){
+    // Manuale: mantieni i prezzi correnti, solo aggiorna l'etichetta
+    prezziarioGlobale='MAN';
+    computoVoci.forEach(v=>{v.prezziarioVoce='MAN';});
+    aggiornaBottoniPrezziario();
+    renderVoci();
+    return;
+  }
+  if(!confirm(`Applicare il prezziario ${nuovo==='DEI'?'DEI 2024':'Sicilia 2024'} a TUTTE le voci?\n\nI prezzi delle voci del listino verranno aggiornati. Le voci con prezzo modificato manualmente verranno sovrascritte.`))return;
+  prezziarioGlobale=nuovo;
+  const prezz=getPrezziario(nuovo);
+  computoVoci.forEach(v=>{
+    v.prezziarioVoce=nuovo;
+    if(v.lavorazione){
+      const dati=prezz[v.lavorazione];
+      if(dati){
+        v.pu=dati.p;
+        v.puOriginale=dati.p;
+        v.um=dati.um;
+        const qtaTot=calcQtaTotale(v);
+        v.tot=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+      }
+    }
+  });
+  aggiornaBottoniPrezziario();
+  renderVoci();
+}
+
+function aggiornaBottoniPrezziario(){
+  ['DEI','SIC','MAN'].forEach(p=>{
+    const b=document.getElementById('pg-'+p);if(!b)return;
+    const isActive=prezziarioGlobale===p;
+    b.style.border='2px solid '+(isActive?'var(--gold)':'#ddd');
+    b.style.background=isActive?'var(--gold)':'#fff';
+    b.style.color=isActive?'#fff':'#444';
+  });
+}
+function setDesc(id,val){const v=computoVoci.find(x=>x.id===id);if(v)v.descEstesa=val;}
+
+function setUM(id,val){
+  const v=computoVoci.find(x=>x.id===id);if(!v)return;
+  v.um=val;
+  // Aggiorna tutti i display U.M. senza re-render completo
+  const qtaTot=calcQtaTotale(v);
+  v.tot=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+  // Aggiorna riga totale misure
+  const qtEl=document.getElementById('qt_'+id);
+  if(qtEl)qtEl.textContent=(qtaTot||0)+' '+val;
+  // Aggiorna righe singole
+  v.righe.forEach(r=>{
+    const rigaEl=document.getElementById('riga_'+r.rid);
+    if(rigaEl){
+      const qr=calcRiga(r);
+      const disp=rigaEl.querySelector('div[style*="text-align:right"]');
+      if(disp)disp.textContent=qr>0?qr+' '+val:'—';
+    }
+  });
+  // Aggiorna riepilogo
+  const vtEl=document.getElementById('vt_'+id);
+  if(vtEl)vtEl.textContent='€ '+fmt(v.tot);
+  aggTotale();
+}
+
+function setPU(id,val){
+  const v=computoVoci.find(x=>x.id===id);if(!v)return;
+  v.pu=parseFloat(val)||0;
+  const qtaTot=calcQtaTotale(v);
+  v.tot=v.pu>0?Math.round(qtaTot*v.pu*100)/100:0;
+  const vtEl=document.getElementById('vt_'+id);
+  if(vtEl)vtEl.textContent='€ '+fmt(v.tot);
+  aggTotale();
+}
+
+function rmVoce(id){computoVoci=computoVoci.filter(x=>x.id!==id);renderVoci()}
+function aggTotale(){
+  const ivaP=parseFloat(document.getElementById('cp-iva')?.value||22)/100;
+  const sub=computoVoci.reduce((a,v)=>a+v.tot,0);
+  const iva=Math.round(sub*ivaP*100)/100;
+  const tot=Math.round((sub+iva)*100)/100;
+  const el=document.getElementById('CP_TOT');if(el)el.textContent='€ '+fmt(tot);
+  const det=document.getElementById('CP_DET');
+  if(det)det.textContent=`Subtotale: € ${fmt(sub)} — IVA ${Math.round(ivaP*100)}%: € ${fmt(iva)}`;
+  // Autosalva bozza ad ogni modifica
+  if(activePage==='comp') autosaveBozza();
+}
+function salvaComputo(){
+  const tit=document.getElementById('cp-t')?.value.trim();
+  if(!tit){alert('Inserisci il titolo del computo.');return}
+  const vv=computoVoci.filter(v=>v.lavorazione&&calcQtaTotale(v)>0);
+  if(!vv.length){alert('Aggiungi almeno una voce con lavorazione e quantità.');return}
+  const az=document.getElementById('cp-az')?.value||'';if(az)DB.set('azienda',az);
+  const cel=document.getElementById('cp-c');
+  const cid=cel?.value||'';
+  const cNome=cid&&cel.selectedIndex>0?cel.options[cel.selectedIndex].dataset.n:'';
+  const cl=document.getElementById('cp-cl')?.value||'';
+  const dtVal=document.getElementById('cp-dt')?.value;
+  const dt=dtVal?new Date(dtVal).toLocaleDateString('it-IT'):today();
+  const ivaP=parseFloat(document.getElementById('cp-iva')?.value||22);
+  const voceObjs=vv.map(v=>{
+    const q=calcQtaTotale(v);
+    const tot=Math.round(q*v.pu*100)/100;
+    return{
+      descrizione:v.lavorazione.charAt(0).toUpperCase()+v.lavorazione.slice(1),
+      descEstesa:v.descEstesa||'',
+      righe:(v.righe||[]).map(r=>({desc:r.desc,n:r.n||1,lung:r.lung||0,larg:r.larg||0,hh:r.hh||0,qta:calcRiga(r)})),
+      quantita:q, unitaMisura:v.um, prezzoUnitario:v.pu, totale:tot
+    };
+  });
+  const sub=Math.round(voceObjs.reduce((a,v)=>a+v.totale,0)*100)/100;
+  const iva=Math.round(sub*(ivaP/100)*100)/100;
+  const totale=Math.round((sub+iva)*100)/100;
+  const id=uid();
+  const obj={id,titolo:tit,cantNome:cNome,cantId:cid,cliente:cl,azienda:az,data:dt,iso:new Date().toISOString(),ivaPerc:ivaP,voci:voceObjs,sub,iva,totale};
+  DB.push('computi',obj);
+  const saved=DB.list('computi').find(x=>x.id===id);
+  if(!saved){alert('Errore nel salvataggio. Riprova.');return}
+  DB.del('comp_bozza'); // cancella bozza dopo salvataggio
+  computoVoci=[];
+  dlComp(id);
+  setTimeout(()=>go('comp'),200);
+}
+
+function delComp(id){if(!confirm('Eliminare?'))return;DB.rm('computi',id);go('comp')}
+function viewComp(id){
+  const c=DB.list('computi').find(x=>x.id===id);if(!c)return;
+  const vr=c.voci.map((v,i)=>`<tr style="background:${i%2?'#FAFAF8':'#fff'}">
+    <td style="padding:8px">${i+1}</td><td style="padding:8px">${v.descrizione}</td>
+    <td style="text-align:center;padding:8px">${v.quantita} ${v.unitaMisura}</td>
+    <td style="text-align:right;padding:8px">€ ${fmt(v.prezzoUnitario)}</td>
+    <td style="text-align:right;padding:8px"><b>€ ${fmt(v.totale)}</b></td>
+  </tr>`).join('');
+  openM(`<div class="mtit">${c.titolo}</div>
+  <p style="color:var(--muted);font-size:.81rem;margin-bottom:1rem">${[c.cantNome,c.cliente,c.data].filter(Boolean).join(' — ')}</p>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Descrizione</th><th style="text-align:center">Qtà/U.M.</th><th style="text-align:right">€/U.M.</th><th style="text-align:right">Totale</th></tr></thead>
+    <tbody>${vr}</tbody>
+    <tfoot>
+      <tr><td colspan="4" style="text-align:right;padding:8px;color:var(--muted)">Subtotale</td><td style="text-align:right;padding:8px">€ ${fmt(c.sub)}</td></tr>
+      <tr><td colspan="4" style="text-align:right;padding:8px;color:var(--muted)">IVA ${c.ivaPerc||22}%</td><td style="text-align:right;padding:8px">€ ${fmt(c.iva)}</td></tr>
+      <tr style="font-weight:700"><td colspan="4" style="text-align:right;padding:8px">TOTALE</td><td style="text-align:right;padding:8px;color:var(--gd)">€ ${fmt(c.totale)}</td></tr>
+    </tfoot>
+  </table></div>
+  <div class="mfoot"><button class="btn bo" onclick="closeM()">Chiudi</button><button class="btn bg" onclick="dlComp('${c.id}');closeM()">⬇ PDF</button></div>`);
+}
+const LOGO_B64="data:image/jpeg;base64,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";
+
+function dlComp(id){
+  const c=DB.list('computi').find(x=>x.id===id);
+  if(!c){alert('Computo non trovato.');return;}
+  if(!window.jspdf){alert('Libreria PDF non caricata. Ricarica la pagina.');return;}
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const W=210,M=16;let y=0;
+    // Colori verde salvia
+    const VERDE=[130,155,130]; // verde salvia
+    const VERDE_S=[100,130,100]; // verde scuro
+    const BEIGE=[245,242,235]; // bianco sporco
+    const BEIGE_S=[235,230,220]; // beige più scuro
+    const BIANCO=[255,255,255];
+    const NERO=[35,35,35];
+
+    // ═══ HEADER con logo ═══
+    doc.setFillColor(...VERDE);doc.rect(0,0,W,42,'F');
+    // Logo SA.MA. GROUP (a sinistra)
+    try{doc.addImage(LOGO_B64,'JPEG',M,6,35,20);}catch(e){/* logo non caricato */}
+    // Titolo header
+    doc.setTextColor(...BIANCO);doc.setFontSize(15);doc.setFont('helvetica','bold');
+    doc.text('COMPUTO METRICO ESTIMATIVO',M+42,16);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(220,230,220);
+    doc.text('Prezziario '+(c.prezziario||'DEI')+' 2024',M+42,23);
+    // Azienda (a destra)
+    if(c.azienda){
+      doc.setFontSize(9);doc.setTextColor(...BIANCO);doc.setFont('helvetica','bold');
+      doc.text(String(c.azienda),W-M,14,{align:'right'});
+    }
+    // Linea decorativa bianco sporco
+    doc.setFillColor(...BEIGE);doc.rect(0,42,W,3,'F');
+    y=52;
+
+    // ═══ INFO DOCUMENTO ═══
+    doc.setTextColor(...NERO);doc.setFontSize(13);doc.setFont('helvetica','bold');
+    doc.text(String(c.titolo||'Computo'),M,y);y+=7;
+    doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);
+    if(c.cantNome){doc.text('Cantiere: '+String(c.cantNome),M,y);y+=5;}
+    if(c.cliente){doc.text('Cliente: '+String(c.cliente),M,y);y+=5;}
+    doc.text('Data: '+String(c.data||''),M,y);y+=3;
+    // Linea sottile verde
+    doc.setDrawColor(...VERDE);doc.setLineWidth(0.5);doc.line(M,y,W-M,y);y+=6;
+
+    // ═══ INTESTAZIONE TABELLA ═══
+    doc.setFillColor(...VERDE);doc.rect(M,y,W-2*M,8,'F');
+    doc.setTextColor(...BIANCO);doc.setFontSize(7);doc.setFont('helvetica','bold');
+    const cols={n:M+2,desc:M+10,qta:M+108,um:M+120,pu:M+133,tot:W-M-2};
+    doc.text('#',cols.n,y+5.5);
+    doc.text('DESCRIZIONE LAVORI',cols.desc,y+5.5);
+    doc.text('Q.TA\u0027',cols.qta,y+5.5);
+    doc.text('U.M.',cols.um,y+5.5);
+    doc.text('PREZZO',cols.pu,y+5.5);
+    doc.text('IMPORTO',cols.tot,y+5.5,{align:'right'});
+    y+=10;
+
+    // ═══ RIGHE VOCI ═══
+    doc.setFont('helvetica','normal');doc.setTextColor(...NERO);
+    const voci=c.voci||[];
+    voci.forEach((v,i)=>{
+      const desc=String(v.descrizione||'');
+      const descEst=String(v.descEstesa||'');
+      const descLines=doc.splitTextToSize(desc,85);
+      const estLines=descEst?doc.splitTextToSize(descEst,85):[];
+      const righe=v.righe||[];
+      const hdH=Math.max(9,(descLines.length+estLines.length)*4.2+4);
+      const righeH=righe.length>0?righe.length*5.2+9:0;
+      const totH=hdH+righeH+8;
+      if(y+totH>272){
+        // Footer pagina
+        doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(180,180,180);
+        doc.text('SA.MA. GROUP — Computo Metrico Estimativo',W/2,290,{align:'center'});
+        doc.addPage();y=M;
+      }
+
+      // Sfondo intestazione voce (alternato beige)
+      const bg=i%2===0?BEIGE:BIANCO;
+      doc.setFillColor(...bg);doc.rect(M,y-2,W-2*M,hdH,'F');
+      doc.setFontSize(8);doc.setTextColor(...NERO);
+      // Numero con cerchio verde
+      doc.setFillColor(...VERDE);doc.circle(M+4,y+2,3,'F');
+      doc.setTextColor(...BIANCO);doc.setFontSize(7);doc.setFont('helvetica','bold');
+      doc.text(String(i+1),M+4,y+3,{align:'center'});
+      // Descrizione principale
+      doc.setTextColor(...NERO);doc.setFontSize(8.5);doc.setFont('helvetica','bold');
+      doc.text(descLines,cols.desc,y+3);
+      let yOff=descLines.length*4.2;
+      // Descrizione estesa
+      if(estLines.length>0){
+        doc.setFont('helvetica','normal');doc.setFontSize(7.2);doc.setTextColor(110,110,110);
+        doc.text(estLines,cols.desc,y+3+yOff);
+        yOff+=estLines.length*3.6;
+      }
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...NERO);
+      y+=hdH;
+
+      // Righe misure dettagliate
+      if(righe.length>0){
+        // Header colonne misure
+        doc.setFillColor(...BEIGE_S);doc.rect(M+8,y,W-2*M-8,4.5,'F');
+        doc.setFontSize(6.2);doc.setTextColor(...VERDE_S);doc.setFont('helvetica','bold');
+        doc.text('AMBIENTE / ZONA',M+10,y+3.2);
+        doc.text('N\u00B0',M+88,y+3.2,{align:'right'});
+        doc.text('LUNG.',M+102,y+3.2,{align:'right'});
+        doc.text('LARG.',M+116,y+3.2,{align:'right'});
+        doc.text('ALT.',M+128,y+3.2,{align:'right'});
+        doc.text('Q.TA\u0027',W-M-2,y+3.2,{align:'right'});
+        y+=4.5;
+        doc.setFont('helvetica','normal');
+        righe.forEach((r,ri)=>{
+          if(y>272){doc.addPage();y=M;}
+          const bgR=ri%2===0?[250,248,244]:BIANCO;
+          doc.setFillColor(...bgR);doc.rect(M+8,y,W-2*M-8,5.2,'F');
+          doc.setFontSize(7);doc.setTextColor(60,60,60);
+          doc.text(String(r.desc||'-'),M+10,y+3.6);
+          doc.text(String(r.n||1),M+88,y+3.6,{align:'right'});
+          doc.text(r.lung>0?String(r.lung):'-',M+102,y+3.6,{align:'right'});
+          doc.text(r.larg>0?String(r.larg):'-',M+116,y+3.6,{align:'right'});
+          doc.text(r.hh>0?String(r.hh):'-',M+128,y+3.6,{align:'right'});
+          const qr=r.qta||0;
+          doc.setFont('helvetica','bold');
+          doc.text(qr>0?String(qr):'-',W-M-2,y+3.6,{align:'right'});
+          doc.setFont('helvetica','normal');
+          y+=5.2;
+        });
+      }
+
+      // Riga totale voce — barra verde
+      doc.setFillColor(...VERDE);doc.rect(M,y,W-2*M,7,'F');
+      doc.setTextColor(...BIANCO);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+      doc.text(String(v.quantita||0)+' '+String(v.unitaMisura||''),M+3,y+4.8);
+      doc.text('x \u20AC '+fmt(v.prezzoUnitario||0)+'/'+(v.unitaMisura||''),M+40,y+4.8);
+      doc.text('\u20AC '+fmt(v.totale||0),W-M-2,y+4.8,{align:'right'});
+      doc.setFont('helvetica','normal');doc.setTextColor(...NERO);
+      y+=9;
+    });
+
+    // ═══ TOTALI ═══
+    y+=3;
+    doc.setDrawColor(...VERDE);doc.setLineWidth(0.6);doc.line(M,y,W-M,y);y+=6;
+    // Subtotale
+    doc.setFontSize(9);doc.setTextColor(100,100,100);
+    doc.text('Imponibile:',W-M-58,y);doc.setTextColor(...NERO);
+    doc.text('\u20AC '+fmt(c.sub||0),W-M-2,y,{align:'right'});y+=6;
+    // IVA
+    doc.setTextColor(100,100,100);
+    doc.text('IVA '+(c.ivaPerc||22)+'%:',W-M-58,y);doc.setTextColor(...NERO);
+    doc.text('\u20AC '+fmt(c.iva||0),W-M-2,y,{align:'right'});y+=8;
+    // TOTALE con box verde
+    doc.setFillColor(...VERDE);doc.roundedRect(W-M-85,y-5,85,12,3,3,'F');
+    doc.setTextColor(...BIANCO);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text('TOTALE COMPLESSIVO',W-M-83,y+2.5);
+    doc.text('\u20AC '+fmt(c.totale||0),W-M-2,y+2.5,{align:'right'});
+
+    // ═══ FOOTER ═══
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(180,180,180);
+    doc.text('SA.MA. GROUP — Computo Metrico Estimativo — Prezziario '+(c.prezziario||'DEI')+' 2024',W/2,290,{align:'center'});
+    // Logo piccolo in footer
+    try{doc.addImage(LOGO_B64,'JPEG',M,283,18,10);}catch(e){}
+
+    // Salva PDF — download diretto
+    const nome='Computo_'+String(c.titolo||'documento').replace(/[^a-zA-Z0-9_]/g,'_')+'.pdf';
+    doc.save(nome);
+  }catch(err){
+    console.error('PDF error:',err);
+    alert('Errore PDF: '+err.message+'\nRicarica la pagina e riprova.');
+  }
+}
+
+function pgCont(){
+  const cant=DB.list('cantieri'),logs=DB.list('logs'),comp=DB.list('computi');
+  const tR=cant.reduce((s,c)=>{const cp=comp.filter(x=>x.cantId===c.id).pop();return s+(cp?.totale||0)},0);
+  const tC=logs.reduce((s,l)=>s+(l.costo||0),0);
+  const rows=cant.map(c=>{
+    const cl=logs.filter(l=>l.cantId===c.id),costo=cl.reduce((s,l)=>s+(l.costo||0),0);
+    const cp=comp.filter(x=>x.cantId===c.id).pop(),ric=cp?.totale||0,marg=ric-costo;
+    return`<tr><td><b>${c.nome}</b></td><td>${c.cl||'—'}</td>
+    <td><span class="badge ${c.stato==='attivo'?'bgv':'bggr'}">${c.stato}</span></td>
+    <td style="text-align:right">€ ${fmt(ric)}</td>
+    <td style="text-align:right">€ ${fmt(costo)}</td>
+    <td style="text-align:right;font-weight:700;color:${marg>=0?'var(--grn)':'var(--red)'}">€ ${fmt(marg)}</td>
+    <td style="text-align:right">${ric>0?(marg/ric*100).toFixed(1)+'%':'—'}</td></tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">Aggiungi cantieri per vedere la contabilità</td></tr>';
+  return`<div class="ph"><h2>Contabilità</h2></div>
+  <div class="sg">
+    <div class="sc"><div class="sl">Ricavi (da computi)</div><div class="sv grn">€ ${fmt(tR)}</div></div>
+    <div class="sc"><div class="sl">Costi manodopera</div><div class="sv">€ ${fmt(tC)}</div></div>
+    <div class="sc"><div class="sl">Margine lordo</div><div class="sv gold">€ ${fmt(tR-tC)}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Cantiere</th><th>Cliente</th><th>Stato</th><th style="text-align:right">Ricavo</th><th style="text-align:right">Costi</th><th style="text-align:right">Margine</th><th style="text-align:right">%</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div></div>`;
+}
+
+function pgLogs(){
+  const logs=DB.list('logs').slice().reverse();
+  const rows=logs.map(l=>`<tr>
+    <td>${l.data}</td><td><b>${l.cantNome}</b></td><td>${l.dipNome}</td>
+    <td style="font-size:.78rem;max-width:180px">${l.riepilogo||'—'}</td>
+    <td style="text-align:right"><b>€ ${fmt(l.costo)}</b></td>
+    <td><button class="btn bo bsm" onclick="viewLog('${l.id}')">👁</button></td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">Nessun report</td></tr>';
+  return`<div class="ph"><h2>Report Giornalieri</h2></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Data</th><th>Cantiere</th><th>Dipendente</th><th>Lavorazione</th><th style="text-align:right">Costo</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div></div>`;
+}
+function viewLog(id){
+  const l=DB.list('logs').find(x=>x.id===id);if(!l)return;
+  const vr=(l.voci||[]).map(v=>`<tr>
+    <td>${v.descrizione}</td><td style="text-align:center">${v.quantita} ${v.unitaMisura}</td>
+    <td style="text-align:right">€ ${fmt(v.prezzoUnitario)}</td>
+    <td style="text-align:right"><b>€ ${fmt(v.totale)}</b></td>
+  </tr>`).join('');
+  openM(`<div class="mtit">Report ${l.data}</div>
+  <p style="color:var(--muted);margin-bottom:.85rem">👷 <b>${l.dipNome}</b> &nbsp;—&nbsp; 🏗️ ${l.cantNome}</p>
+  <div style="font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:.3rem">Trascrizione</div>
+  <div class="tbox">${l.trascrizione||'—'}</div>
+  ${vr?`<table style="width:100%;font-size:.82rem;border-collapse:collapse">
+    <thead><tr><th style="text-align:left;padding:7px">Voce</th><th style="text-align:center;padding:7px">Qtà</th><th style="text-align:right;padding:7px">Prezzo</th><th style="text-align:right;padding:7px">Totale</th></tr></thead>
+    <tbody>${vr}</tbody></table>
+    <div style="text-align:right;font-weight:700;color:var(--gd);margin-top:.75rem">Totale: € ${fmt(l.costo)}</div>`:''}
+  <div class="mfoot"><button class="btn bg" onclick="closeM()">Chiudi</button></div>`);
+}
+
+function pgList(){
+  const custom=DB.get('custom_voci')||{};
+  const bycat={};
+  for(const[k,v] of Object.entries(L)){if(!bycat[v.cat])bycat[v.cat]=[];bycat[v.cat].push([k,v,'std'])}
+  if(Object.keys(custom).length>0){
+    bycat['⭐ Voci Personalizzate']=[];
+    for(const[k,v] of Object.entries(custom)) bycat['⭐ Voci Personalizzate'].push([k,v,'custom']);
+  }
+  const body=Object.entries(bycat).map(([cat,items])=>`
+    <tr style="background:#F5F4F0"><td colspan="4" style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:9px 11px">${cat}</td></tr>
+    ${items.map(([k,v,tipo])=>`<tr>
+      <td>${k.charAt(0).toUpperCase()+k.slice(1)}</td>
+      <td style="text-align:center">${v.um}</td>
+      <td style="text-align:right"><span class="badge bgg">€ ${fmt(v.p)}</span></td>
+      <td style="text-align:right;width:60px">${tipo==='custom'?`<button class="btn br bsm" onclick="deleteCustomVoce('${k}')">🗑️</button>`:''}</td>
+    </tr>`).join('')}`).join('');
+
+  return`<div class="ph"><h2>Listino Prezzi</h2><p>Prezziario DEI 2024 Ristrutturazioni — ${Object.keys(L).length} voci standard + ${Object.keys(custom).length} personalizzate</p></div>
+
+  <div class="card" style="border-color:var(--gold);background:var(--gl)">
+    <div class="card-title">➕ Aggiungi lavorazione personalizzata</div>
+    <p style="color:var(--gd);font-size:.82rem;margin-bottom:1rem">Le voci personalizzate vengono salvate permanentemente e appaiono nel menu di selezione dei computi metrici.</p>
+    <div class="fgrid">
+      <div class="fg full"><label>Nome lavorazione *</label>
+        <input id="cv-nome" placeholder="Es: Posa mosaico veneziano, Micropali, Solaio in vetrocemento…"/></div>
+      <div class="fg full"><label>Descrizione tecnica (per il computo)</label>
+        <textarea id="cv-desc" rows="3" placeholder="Descrizione completa per il computo metrico…"></textarea></div>
+      <div class="fg"><label>Unità di misura *</label>
+        <select id="cv-um">
+          <option value="m²">m² — Metro quadrato</option>
+          <option value="m³">m³ — Metro cubo</option>
+          <option value="m">m — Metro lineare</option>
+          <option value="cad">cad — Cadauno/pezzo</option>
+          <option value="h">h — Ora</option>
+          <option value="gg">gg — Giornata</option>
+          <option value="kg">kg — Chilogrammo</option>
+          <option value="t">t — Tonnellata</option>
+          <option value="kWp">kWp — Kilowatt picco</option>
+          <option value="a corpo">a corpo — A corpo</option>
+        </select></div>
+      <div class="fg"><label>Prezzo unitario (€) *</label>
+        <input id="cv-prezzo" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+      <div class="fg"><label>Categoria</label>
+        <input id="cv-cat" placeholder="Es: Finiture speciali, Strutture particolari…"/></div>
+      <div class="fg"><label>Riferimento (opzionale)</label>
+        <input id="cv-ref" placeholder="Es: Analisi prezzi, Preventivo fornitore…"/></div>
+    </div>
+    <button class="btn bg" onclick="saveCustomVoce()" style="margin-top:.5rem">💾 Salva lavorazione</button>
+    <div class="err" id="cv-err" style="text-align:left;margin-top:.5rem"></div>
+  </div>
+
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Lavorazione</th><th style="text-align:center">U.M.</th><th style="text-align:right">Prezzo</th><th></th></tr></thead>
+    <tbody>${body}</tbody>
+  </table></div></div>`;
+}
+
+function saveCustomVoce(){
+  const nome=document.getElementById('cv-nome').value.trim();
+  const um=document.getElementById('cv-um').value;
+  const prezzo=parseFloat(document.getElementById('cv-prezzo').value);
+  const desc=document.getElementById('cv-desc').value.trim();
+  const cat=document.getElementById('cv-cat').value.trim()||'Voci Personalizzate';
+  const ref=document.getElementById('cv-ref').value.trim();
+  const errEl=document.getElementById('cv-err');
+  errEl.textContent='';
+  if(!nome){errEl.textContent='Inserisci il nome della lavorazione.';return}
+  if(!prezzo||prezzo<=0){errEl.textContent='Inserisci un prezzo valido maggiore di 0.';return}
+  const nomeLower=nome.toLowerCase();
+  if(L[nomeLower]){errEl.textContent='Questo nome esiste già nel listino standard. Usa un nome diverso.';return}
+  const custom=DB.get('custom_voci')||{};
+  custom[nomeLower]={p:prezzo,um,cat,desc,ref,nome,addedAt:new Date().toISOString()};
+  DB.set('custom_voci',custom);
+  // Aggiungi anche al listino runtime L così appare subito nel menu computi
+  L[nomeLower]={um,p:prezzo,cat:'⭐ '+cat};
+  // Aggiungi descrizione tecnica
+  DESC_TECNICHE[nomeLower]=desc||`Fornitura e posa in opera di ${nome.toLowerCase()}, compresi tutti i materiali, la manodopera e quanto necessario per dare il lavoro finito a regola d'arte.`;
+  document.getElementById('cv-nome').value='';
+  document.getElementById('cv-desc').value='';
+  document.getElementById('cv-prezzo').value='';
+  document.getElementById('cv-cat').value='';
+  document.getElementById('cv-ref').value='';
+  go('list');
+}
+
+function deleteCustomVoce(nome){
+  if(!confirm('Eliminare "'+nome+'" dal listino personalizzato?'))return;
+  const custom=DB.get('custom_voci')||{};
+  delete custom[nome];
+  DB.set('custom_voci',custom);
+  delete L[nome];
+  delete DESC_TECNICHE[nome];
+  go('list');
+}
+
+function loadCustomVoci(){
+  const custom=DB.get('custom_voci')||{};
+  for(const[k,v] of Object.entries(custom)){
+    L[k]={um:v.um,p:v.p,cat:'⭐ '+(v.cat||'Personalizzate')};
+    if(v.desc) DESC_TECNICHE[k]=v.desc;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// PAGES — DIPENDENTE
+// ════════════════════════════════════════════════════════════
+let selCant=null,recOn=false,SR=null,liveTx='',pendRep=null;
+
+function pgECant(){
+  const saved=DB.get('SC_'+CU.id);if(saved)selCant=saved;
+  const list=DB.list('cantieri').filter(c=>c.stato!=='completato');
+  const cards=list.map(c=>`
+    <div class="cc" onclick="selFn('${c.id}','${c.nome.replace(/'/g,"\\'")}');go('erep')" style="cursor:pointer">
+      <div>
+        <div class="cc-name">🏗️ ${c.nome}</div>
+        <div class="cc-meta">📍 ${c.ind||'—'} | Cliente: ${c.cl||'—'}</div>
+        <div style="margin-top:5px"><span class="badge bgv">ATTIVO</span></div>
+      </div>
+      <div style="color:var(--gold);font-size:1.4rem;align-self:center">→</div>
+    </div>`).join('')||'<p style="color:var(--muted);text-align:center;padding:3rem">Nessun cantiere attivo. Contatta il titolare.</p>';
+  return`<div class="ph"><h2>Cantieri</h2><p>Ciao ${CU.name.split(' ')[0]}! Seleziona dove hai lavorato oggi.</p></div>${cards}`;
+}
+function selFn(id,nome){
+  selCant={id,nome};
+  DB.set('SC_'+CU.id,selCant);
+}
+
+function pgERep(){
+  const saved=DB.get('SC_'+CU.id);if(saved)selCant=saved;
+  const banner=selCant
+    ?`<div class="sbanner"><div><h3>🏗️ ${selCant.nome}</h3><p>Cantiere di oggi</p></div><button class="btn bo bsm" onclick="go('ecant')">Cambia</button></div>`
+    :`<div class="alert ainfo">⚠️ Seleziona prima un cantiere. <a href="#" onclick="go('ecant')">Vai ai cantieri →</a></div>`;
+  return`<div class="ph"><h2>Report Giornaliero</h2></div>
+  ${banner}
+  <div class="card">
+    <div class="card-title">🎙️ Registrazione Vocale</div>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:.6rem">Premi e descrivi i lavori. Il testo appare in tempo reale.</p>
+    <div id="recbtn" onclick="toggleRec()">🎙️</div>
+    <div class="rst" id="RST">Premi per iniziare</div>
+  </div>
+  <div class="card">
+    <div class="card-title">✏️ Descrivi i lavori</div>
+    <div class="fg"><textarea id="RTEXT" rows="4" placeholder="Es: ho applicato 45 metri quadri di intonaco, posato 30 m² di gres porcellanato, demolito parete 12 m²…"></textarea></div>
+    <div class="brow"><button class="btn bg" onclick="elabora()" style="width:100%;padding:13px">🤖 Analizza e calcola costi</button></div>
+  </div>
+  <div id="ARES" style="display:none">
+    <div class="card">
+      <div class="card-title">✅ Conferma le lavorazioni</div>
+      <div class="tbox" id="ATXT"></div>
+      <div id="AVOCI"></div>
+      <div style="text-align:right;font-size:1.05rem;font-weight:700;color:var(--gd);margin-top:.85rem;padding-top:.85rem;border-top:2px solid var(--border)" id="ATOT"></div>
+      <div class="brow" style="margin-top:.85rem">
+        <button class="btn bg" onclick="salvaReport()" style="flex:1;padding:13px">✅ Conferma e Salva</button>
+        <button class="btn bo" onclick="document.getElementById('ARES').style.display='none'">✏️ Correggi</button>
+      </div>
+    </div>
+  </div>
+  <div id="ALD" style="display:none"><div class="spin-wrap"><div class="spin"></div>Analisi in corso…</div></div>`;
+}
+
+function toggleRec(){recOn?stopRec():startRec()}
+function startRec(){
+  const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SRC){alert('Il riconoscimento vocale richiede Google Chrome o Edge.');return}
+  liveTx='';recOn=true;updRecBtn();
+  function crea(){
+    const r=new SRC();r.lang='it-IT';r.continuous=false;r.interimResults=true;
+    r.onresult=e=>{
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal)liveTx+=e.results[i][0].transcript+' ';
+        else interim=e.results[i][0].transcript;
+      }
+      const st=document.getElementById('RST'),ta=document.getElementById('RTEXT');
+      const full=(liveTx+interim).trim();
+      if(st)st.textContent='🔴 '+(full||'Parla ora…');
+      if(ta)ta.value=full;
+    };
+    r.onerror=e=>{if(e.error==='not-allowed'){alert('Abilita il microfono.');recOn=false;updRecBtn()}};
+    r.onend=()=>{if(recOn){try{crea()}catch(ex){}}};
+    SR=r;r.start();
+  }
+  crea();
+  const st=document.getElementById('RST');if(st)st.textContent='🔴 In ascolto… parla chiaramente';
+}
+function stopRec(){
+  recOn=false;if(SR){try{SR.onend=null;SR.stop()}catch(e){}SR=null}
+  updRecBtn();
+  const st=document.getElementById('RST');
+  if(st)st.textContent=liveTx.trim()?'✅ Terminato. Premi Analizza.':'Premi per iniziare';
+}
+function updRecBtn(){
+  const b=document.getElementById('recbtn');if(!b)return;
+  b.classList.toggle('rec',recOn);b.textContent=recOn?'⏹️':'🎙️';
+}
+
+function elabora(){
+  const text=document.getElementById('RTEXT')?.value.trim();
+  if(!text){alert('Scrivi o registra le lavorazioni prima di analizzare.');return}
+  if(!selCant){alert('Seleziona prima un cantiere.');return}
+  document.getElementById('ALD').style.display='block';
+  document.getElementById('ARES').style.display='none';
+  const data=analizza(text);
+  pendRep={...data,cantiere:selCant};
+  document.getElementById('ATXT').textContent=data.trascrizione;
+  document.getElementById('AVOCI').innerHTML=data.voci.length
+    ?`<table style="width:100%;font-size:.83rem;border-collapse:collapse;margin-top:.6rem">
+      <thead><tr style="background:#F0EDE6">
+        <th style="text-align:left;padding:8px">Lavorazione</th>
+        <th style="text-align:center;padding:8px">Qtà</th>
+        <th style="text-align:right;padding:8px">€/U.M.</th>
+        <th style="text-align:right;padding:8px">Totale</th>
+      </tr></thead>
+      <tbody>${data.voci.map(v=>`<tr>
+        <td style="padding:8px">${v.descrizione} <small style="color:var(--muted)">(${v.unitaMisura})</small></td>
+        <td style="text-align:center;padding:8px">${v.quantita}</td>
+        <td style="text-align:right;padding:8px">€ ${fmt(v.prezzoUnitario)}</td>
+        <td style="text-align:right;padding:8px"><b>€ ${fmt(v.totale)}</b></td>
+      </tr>`).join('')}</tbody>
+    </table>`
+    :`<div class="alert ainfo" style="margin-top:.5rem">⚠️ Nessuna voce riconosciuta. Prova a scrivere es: "45 metri quadri di intonaco" o "30 m² di gres".</div>`;
+  document.getElementById('ATOT').textContent='Costo giornata: € '+fmt(data.costoTotale);
+  document.getElementById('ARES').style.display='block';
+  document.getElementById('ALD').style.display='none';
+}
+
+function salvaReport(){
+  if(!pendRep)return;
+  const entry={
+    id:uid(),data:today(),iso:new Date().toISOString(),
+    cantId:pendRep.cantiere.id,cantNome:pendRep.cantiere.nome,
+    dipId:CU.id,dipNome:CU.name,
+    trascrizione:pendRep.trascrizione,riepilogo:pendRep.riepilogo,
+    voci:pendRep.voci||[],costo:pendRep.costoTotale||0
+  };
+  DB.push('logs',entry);
+  // Verifica
+  const ok=DB.list('logs').some(l=>l.id===entry.id);
+  pendRep=null;liveTx='';
+  const ta=document.getElementById('RTEXT');if(ta)ta.value='';
+  const ar=document.getElementById('ARES');if(ar)ar.style.display='none';
+  if(!ok){alert('Errore nel salvataggio. Riprova.');return}
+  openM(`<div style="text-align:center;padding:1rem">
+    <div style="font-size:3rem;margin-bottom:.75rem">✅</div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:.4rem">Report salvato!</h3>
+    <p style="color:var(--muted)">Registrato e visibile al titolare.</p>
+    <p style="color:var(--gd);font-weight:700;font-size:1.1rem;margin-top:.5rem">Costo giornata: € ${fmt(entry.costo)}</p>
+    <button class="btn bg" onclick="closeM();go('esto')" style="margin-top:1rem;width:100%;padding:13px">Vedi i miei report</button>
+    <button class="btn bo" onclick="closeM();go('erep')" style="margin-top:.4rem;width:100%;padding:12px">Aggiungi un'altra voce</button>
+  </div>`);
+}
+
+function pgESto(){
+  const logs=DB.list('logs').filter(l=>l.dipId===CU.id).slice().reverse();
+  const tot=logs.reduce((s,l)=>s+(l.costo||0),0);
+  const rows=logs.map(l=>`<tr>
+    <td>${l.data}</td><td><b>${l.cantNome}</b></td>
+    <td style="font-size:.78rem;max-width:160px">${l.riepilogo||'—'}</td>
+    <td style="text-align:right"><span class="badge bgg">€ ${fmt(l.costo)}</span></td>
+    <td><button class="btn bo bsm" onclick="viewLog('${l.id}')">👁</button></td>
+  </tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">Nessun report ancora</td></tr>';
+  return`<div class="ph"><h2>I miei Report</h2></div>
+  <div class="sg">
+    <div class="sc"><div class="sl">Giornate registrate</div><div class="sv">${logs.length}</div></div>
+    <div class="sc"><div class="sl">Valore lavorazioni</div><div class="sv gold">€ ${fmt(tot)}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Data</th><th>Cantiere</th><th>Lavorazione</th><th style="text-align:right">Valore</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div></div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+initDB();
+loadCustomVoci(); // carica voci personalizzate salvate nel localStorage
+document.getElementById('MOD').addEventListener('click',function(e){if(e.target===this)closeM()});
+</script>
+</body>
+</html>
